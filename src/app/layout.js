@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "./components/common/header/Header";
+import Footer from "./components/common/footer/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,7 +23,7 @@ export const metadata = {
     siteName: "Creasdfsdfsfsdfsdte Next App",
     images: [
       {
-        url: "/social-preview.png", // <-- your social preview image path
+        url: "/social-preview.png",
         width: 1200,
         height: 630,
         alt: "Create Next App preview image",
@@ -39,13 +41,20 @@ export const metadata = {
 };
 
 
+
+
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        {children}
+        <Header />
+        <main className="flex-grow bgwh bg-white mx-auto w-full px-4 py-8">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );
