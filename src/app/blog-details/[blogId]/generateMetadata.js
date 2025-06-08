@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
       openGraph: {
         title: blog.title,
         description: blog.description || blog.subtitle || "",
-        url: `https://next-zeni-next.vercel.app/blog-details/${blogId}`,
+url: blog.image?.startsWith('http') ? blog.image : `https://next-zeni-next.vercel.app${blog.image || '/default-og-image.jpg'}`,
         images: [
           {
             url: blog.image || '/default-og-image.jpg',
