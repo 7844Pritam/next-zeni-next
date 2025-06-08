@@ -23,7 +23,7 @@ const Home = () => {
       <HAbout />
       <AboutNew/>
       <Testimsdfonal />
-      <Contact/> */}
+      <Contacsdfsdt/> */}
       {/* <Hprice /> */}
     </>
   );
