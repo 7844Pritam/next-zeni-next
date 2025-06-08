@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase";
@@ -13,7 +13,6 @@ import {
 } from "react-icons/fa";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { adminDb } from '@/lib/firebaseAdmin';
 
 const Page = () => {
   const { blogId } = useParams();
@@ -117,7 +116,7 @@ const Page = () => {
   };
 
   if (loading) return <div className="text-center py-8">Loading blog...</div>;
-if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
+  if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
 
   return (
     <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 pt-8 text-black">
@@ -187,7 +186,7 @@ if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
         <div className="mt-10 border-t border-gray-400 pt-6">
           <h3 className="text-2xl font-semibold mb-4">Follow Us On</h3>
           <div className="flex flex-wrap gap-4">
-            {/* ... Social follow buttons (unchanged) ... */}
+            {/* Social follow buttons can go here if needed */}
           </div>
         </div>
       </div>
@@ -213,41 +212,3 @@ if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
 };
 
 export default Page;
-
-export async function generateMetadata({ params }) {
-  const { blogId } = params;
-
-  try {
-    const blogDoc = await adminDb.collection('blogs').doc(blogId).get();
-    if (!blogDoc.exists) return {};
-
-    const blog = blogDoc.data();
-
-    return {
-      title: blog.title,
-      description: blog.description || blog.subtitle || "",
-      openGraph: {
-        title: blog.title,
-        description: blog.description || blog.subtitle || "",
-        url: `https://next-zeni-next.vercel.app/blog-details/${blogId}`,
-        images: [
-          {
-            url: blog.image || '/default-og-image.jpg',
-            width: 1200,
-            height: 630,
-            alt: `${blog.title} preview`,
-          },
-        ],
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: blog.title,
-        description: blog.description || blog.subtitle || "",
-        images: [blog.image || '/default-og-image.jpg'],
-      },
-    };
-  } catch (err) {
-    console.error('Error generating metadata:', err);
-    return {};
-  }
-}
