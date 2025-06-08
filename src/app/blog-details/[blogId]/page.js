@@ -1,5 +1,5 @@
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../../firebase";
+import { db } from "../../../app/firebase";
 import BlogDetailsClient from "./BlogDetailsClient";
 
 export async function generateMetadata({ params }) {
