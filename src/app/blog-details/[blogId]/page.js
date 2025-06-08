@@ -14,12 +14,6 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-
-
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase";
-
-
 const Page = () => {
   const { blogId } = useParams();
   const [blog, setBlog] = useState(null);
