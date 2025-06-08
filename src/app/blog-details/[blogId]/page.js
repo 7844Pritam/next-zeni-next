@@ -1,8 +1,6 @@
-import dynamic from "next/dynamic";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../../firebase"; // adjust path if needed
-
-const BlogDetailsClient = dynamic(() => import("./BlogDetailsClient"), { ssr: false });
+import { db } from "../../../firebase";
+import BlogDetailsClient from "./BlogDetailsClient";
 
 export async function generateMetadata({ params }) {
   const blogId = params.blogId;
@@ -57,4 +55,3 @@ export async function generateMetadata({ params }) {
 export default function Page({ params }) {
   return <BlogDetailsClient blogId={params.blogId} />;
 }
-  

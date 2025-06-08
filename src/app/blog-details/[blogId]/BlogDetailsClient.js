@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { db } from "../../../firebase"; 
+import { db } from "../../../firebase";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import {
   FaFacebookF,
@@ -9,7 +9,7 @@ import {
   FaWhatsapp,
   FaLinkedinIn,
   FaInstagram,
-  FaLink,
+  FaLink
 } from "react-icons/fa";
 import Link from "next/link";
 
@@ -182,22 +182,14 @@ const BlogDetailsClient = ({ blogId }) => {
         )}
 
         <div className="mt-10 border-t border-gray-400 pt-6">
-          <h3 className="text-2xl font-semibold mb-4">Follow Us On</h3>
-          <div className="flex flex-wrap gap-4">
-          </div>
-        </div>
-      </div>
-
-      <div className="lg:w-1/4 overflow-y-auto sticky top-0 h-screen bg-white shadow-md p-4">
-        <div className="bg-gray-100 p-4 rounded-md shadow">
-          <h2 className="text-lg font-semibold mb-3">Other Blogs</h2>
-          <ul className="list-disc pl-5 space-y-2">
+          <h3 className="text-2xl font-semibold mb-4">Related Blogs</h3>
+          <ul className="space-y-3">
             {blogs
               .filter((b) => b.id !== blogId)
-              .map((b) => (
-                <li key={b.id}>
-                  <Link href={`/blog/${b.id}`} className="text-blue-700 hover:underline text-sm">
-                    {b.title}
+              .map(({ id, title }) => (
+                <li key={id}>
+                  <Link href={`/blog-details/${id}`} className="text-blue-600 hover:underline">
+                    {title || "Untitled Blog"}
                   </Link>
                 </li>
               ))}
