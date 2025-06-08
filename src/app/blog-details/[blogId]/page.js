@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import React, { useEffect, useState } from "react";
 import { db } from "../../firebase";
@@ -13,6 +13,59 @@ import {
 } from "react-icons/fa";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase";
+
+export async function generateMetadata({ params }) {
+  const blogId = params.blogId;
+
+  try {
+    const blogRef = doc(db, "blogs", blogId);
+    const blogSnap = await getDoc(blogRef);
+
+    if (!blogSnap.exists()) {
+      return {
+        title: "Blog Not Found",
+        description: "The blog you're looking for does not exist.",
+      };
+    }
+
+    const blog = blogSnap.data();
+
+    return {
+      title: blog.title || "Untitled Blog",
+      description: blog.subtitle || "Check out this blog post.",
+      openGraph: {
+        title: blog.title || "Untitled Blog",
+        description: blog.subtitle || "Check out this blog post.",
+        url: `https://next-zeni-next.vercel.app/blog/${blogId}`,
+        images: blog.image
+          ? [
+              {
+                url: blog.image,
+                width: 1200,
+                height: 630,
+                alt: blog.title || "Blog preview",
+              },
+            ]
+          : [],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: blog.title || "Untitled Blog",
+        description: blog.subtitle || "Check out this blog post.",
+        images: blog.image ? [blog.image] : [],
+      },
+    };
+  } catch (error) {
+    console.error("Error generating metadata:", error.message);
+    return {
+      title: "Blog Error",
+      description: "There was a problem generating blog metadata.",
+    };
+  }
+}
 
 const Page = () => {
   const { blogId } = useParams();
@@ -186,7 +239,7 @@ const Page = () => {
         <div className="mt-10 border-t border-gray-400 pt-6">
           <h3 className="text-2xl font-semibold mb-4">Follow Us On</h3>
           <div className="flex flex-wrap gap-4">
-            {/* Social follow buttons can go here if needed */}
+            {/* ... Social follow buttons (unchanged) ... */}
           </div>
         </div>
       </div>
