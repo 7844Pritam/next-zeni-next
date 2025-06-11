@@ -1,4 +1,3 @@
-// app/blog/[slug]/page.js
 import Image from "next/image";
 
 // Dummy blog data
@@ -6,7 +5,7 @@ const blogPosts = {
   "post-one": {
     title: "First Blog Post",
     description: "This is the first dummy blog post.",
-    image: "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D",
+    image: "https://lowqualitymemes.com/img/low-quality-image-before-compressing.png",
   },
   "post-two": {
     title: "Second Blog Post",
@@ -21,7 +20,8 @@ const blogPosts = {
 };
 
 export async function generateMetadata({ params }) {
-  const post = blogPosts[params.slug];
+  const { slug } = params;  // Destructure slug
+  const post = blogPosts[slug];
 
   if (!post) return {};
 
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: post.title,
       description: post.description,
-      url: `https://next-zeni-next.vercel.app/blog/${params.slug}`, 
+      url: `https://next-zeni-next.vercel.app/blog/${slug}`, 
       images: [
         {
           url: post.image,
@@ -51,7 +51,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default function BlogPost({ params }) {
-  const post = blogPosts[params.slug];
+  const { slug } = params;
+  const post = blogPosts[slug];
 
   if (!post) return <h1>Post not found</h1>;
 
