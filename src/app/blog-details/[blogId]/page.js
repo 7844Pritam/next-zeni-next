@@ -28,7 +28,7 @@ export async function generateMetadata({ params }) {
         images: blog.image
           ? [
               {
-                url: `https://next-zeni-next.vercel.app/blog-details/${blogId}`,
+                url: blog.image,       // Use direct image URL here!
                 width: 1200,
                 height: 630,
                 alt: blog.title || "Blog preview",
