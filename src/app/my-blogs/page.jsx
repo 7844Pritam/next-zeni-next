@@ -7,7 +7,7 @@ import Link from "next/link";
 const AllBlogs = () => {
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null); // Added error state
+    const [error, setError] = useState(null); 
 
     useEffect(() => {
         const fetchBlogs = async (userId) => {

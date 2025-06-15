@@ -3,25 +3,24 @@ import React from "react";
 import Link from "next/link";
 import { FaLinkedin, FaFacebookF, FaTwitter, FaInstagram, FaYoutube, FaMapMarkerAlt, FaPhoneAlt, FaPaperPlane } from "react-icons/fa";
 
-import "./footer.css";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white py-4 mt-44">
+    <footer className="bg-teal-700 text-white py-14 px-11 ">
       <div className="px-6">
         <div className="flex flex-col sm:flex-row lg:flex-row justify-between gap-8">
           {/* First Section */}
           <div className="flex-1">
             <h1 className="text-2xl font-bold mb-2">NEXTZENI</h1>
-            <span className="block text-gray-400">ONLINE EDUCATION & LEARNING</span>
-            <p className="mt-4 text-gray-300">Empower Your Voice, Elevate Your Impact!</p>
+            <span className="block ">ONLINE EDUCATION & LEARNING</span>
+            <p className="mt-4 ">Empower Your Voice, Elevate Your Impact!</p>
             <div className="flex space-x-4 mt-4 text-xl">
               <a
                 href="https://www.facebook.com/profile.php?id=61571258289396"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-              >
+              > 
                 <FaFacebookF />
               </a>
               <a
@@ -62,7 +61,7 @@ const Footer = () => {
           {/* Explore Section */}
           <div className="flex-1">
             <h3 className="text-lg font-semibold mb-4">Explore</h3>
-            <ul className="space-y-2 text-gray-300">
+            <ul className="space-y-2 ">
               <li>
                 <Link href="/about">About Us</Link>
               </li>
@@ -84,7 +83,7 @@ const Footer = () => {
           {/* Quick Links Section */}
           <div className="flex-1">
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-gray-300">
+            <ul className="space-y-2 ">
               <li>
                 <Link href="/contact">Contact Us</Link>
               </li>
@@ -130,10 +129,10 @@ const Footer = () => {
         </div>
       </div>
 
-      <hr className="my-4 border-gray-700" />
+      <hr className="my-4 bo" />
 
       <div className="flex justify-center pt-4 px-4">
-        <p className="text-gray-400 text-sm text-center">
+        <p className=" text-sm text-center">
           Copyright ©2025 | All rights reserved by NextZeni | Site Designed & Developed by Difmo Technologies
         </p>
       </div>

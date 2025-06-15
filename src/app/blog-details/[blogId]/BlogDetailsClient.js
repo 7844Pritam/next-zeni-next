@@ -12,6 +12,7 @@ import {
   FaLink
 } from "react-icons/fa";
 import Link from "next/link";
+import MarkdownPreview from '@uiw/react-markdown-preview';
 
 const BlogDetailsClient = ({ blogId }) => {
   const [blog, setBlog] = useState(null);
@@ -160,6 +161,21 @@ const BlogDetailsClient = ({ blogId }) => {
             <img src={blog.image} alt={blog.title} className="w-full h-auto rounded-lg object-contain max-h-[400px]" />
           </div>
         )}
+      <div className="bg-white text-black p-6 rounded-lg">
+  <MarkdownPreview
+  source={blog.content}
+  wrapperElement={{
+    'data-color-mode': 'light',
+  }}
+  style={{
+    backgroundColor: 'white',
+    color: 'black',
+    padding: '1.5rem',
+    borderRadius: '0.5rem',
+  }}
+/>
+
+</div>
 
         {blog?.content ? (
           <div

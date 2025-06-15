@@ -64,7 +64,7 @@ const ShowBlogs = () => {
               </p>
 
               <div className="mt-2 text-sm text-blue-600 hover:underline">
-                <Link href={`/blog/${blog.id}`}>Continue reading →</Link>
+                <Link href={`/blog-details/${blog.id}`}>Continue reading →</Link>
               </div>
             </div>
           ))}

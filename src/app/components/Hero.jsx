@@ -1,6 +1,6 @@
 
 'use client'
-import { motion } from "framer-motion"; 
+import { motion } from "framer-motion";
 
 const HeroHello = () => {
   const textVariants = {
@@ -21,10 +21,10 @@ const HeroHello = () => {
   return (
     <section
       id="home"
-      className="relative bg-gray-50 min-h-screen flex items-center py-12 overflow-hidden"
+      className="relative min-h-screen flex items-center  overflow-hidden"
     >
-      
-      <img
+
+      {/* <img
         src="/images/bgimages/herosvg.svg"
         alt="Hero background"
         className="absolute top-0 right-0 w-40 sm:w-64 md:w-80 lg:w-96 z-0 pointer-events-none"
@@ -33,21 +33,22 @@ const HeroHello = () => {
         src="/images/bgimages/herosvg2.svg"
         alt="Hero background"
         className="absolute bottom-0 left-0  z-0 pointer-events-none"
-      />
+      /> */}
 
 
-      <div className="container mx-auto px-4 flex flex-col-reverse md:flex-row items-center gap-8">
+      <div className="container relative mx-auto px-4 flex flex-col-reverse md:flex-row items-center gap-8">
         {/* Text Content */}
         <motion.div
-          className="w-full md:w-1/2 text-left px-4"
+          className="w-full  md:w-1/2 text-left px-4"
           initial="hidden"
           animate="visible"
           variants={textVariants}
         >
-          <h2 className="text-2xl relative z-10 sm:text-3xl md:text-4xl font-bold text-gray-800">
+          <div className="bg-teal-100 w-60 h-72 blur-3xl absolute left-0 top-0"> </div>
+          <h2 className="text-xl font-Libre text-teal-800 relative z-10 sm:text-3xl md:text-7xl  ">
             Empowering Your Future, One Skill at a Time
           </h2>
-          <p className="text-gray-600 relative z-10 text-sm sm:text-base md:text-lg leading-relaxed mt-4 max-w-md">
+          <p className="text-gray-600 font-Libre relative z-10 text-sm sm:text-base md:text-lg leading-relaxed mt-4 max-w-md">
             Learn Communication, English Speaking, and Soft Skills with NextZeni - Your Partner in Personal and Professional Growth.
           </p>
           <div className="flex relative z-10 justify-start gap-4 mt-6 flex-wrap">
@@ -68,11 +69,12 @@ const HeroHello = () => {
           </div>
         </motion.div>
         <motion.div
-          className="w-full md:w-1/2 flex justify-center"
+          className="w-full relative md:w-1/2 flex justify-center"
           initial="hidden"
           animate="visible"
           variants={imageVariants}
         >
+          <div className="bg-orange-600 w-60 h-72 blur-[200px] absolute right-30 top-40"> </div>
           <img
             src="/images/landing.png"
             alt="Landing"

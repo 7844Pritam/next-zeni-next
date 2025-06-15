@@ -9,6 +9,7 @@ import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import { collection, addDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Name is required'),
@@ -108,12 +109,12 @@ export default function SignUpPage() {
 
           <p className="text-sm mt-3 text-center">
             Already have an account?{' '}
-            <span
+            <Link
               className="text-blue-500 cursor-pointer"
-              onClick={() => router.push('/loginscreen')}
+              href={'/auth/login'}
             >
               Login
-            </span>
+            </Link>
           </p>
         </form>
       </div>

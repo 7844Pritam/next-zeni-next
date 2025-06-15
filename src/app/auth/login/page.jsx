@@ -5,9 +5,11 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+import { auth } from '@/app/firebase'; // ✅ Correct import
 import CustomButton from '@/app/components/InputAndButton/CustomButton';
 import CustomInput from '@/app/components/InputAndButton/CustomInput';
-import { db } from '@/app/firebase';
 
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email format').required('Email is required'),
@@ -28,10 +30,11 @@ const LoginPage = () => {
       setErrorMessage('');
       setLoading(true);
       try {
-        const userCredential = await signInWithEmailAndPassword(db, values.email, values.password);
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password); // ✅ FIXED
         const user = userCredential.user;
+
         if (user.emailVerified) {
-          router.push('/'); // Redirect to homepage
+          router.push('/'); // ✅ Go to homepage
         } else {
           setErrorMessage('Please verify your email first.');
         }
@@ -92,13 +95,9 @@ const LoginPage = () => {
 
           <p className="text-sm text-center mt-4">
             Don&apos;t have an account?{' '}
-            <button
-              type="button"
-              className="text-orange-500 hover:underline"
-              onClick={() => router.push('/register')}
-            >
+            <Link href="/auth/signin" className="text-orange-500 hover:underline">
               Register
-            </button>
+            </Link>
           </p>
         </form>
       </div>
