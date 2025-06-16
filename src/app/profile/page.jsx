@@ -145,7 +145,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-teal-50 p-6">
       {/* Profile Section */}
       <section id="profile" className="mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-md max-w-2xl mx-auto">
+        <div className="border border-teal-200 bg-white mt-24 p-6 rounded-xl max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold mb-4 text-teal-500">Profile</h2>
           {editMode ? (
             <form onSubmit={handleProfileUpdate} className="space-y-4">
@@ -210,15 +210,7 @@ export default function ProfilePage() {
             </form>
           ) : (
             <div className="space-y-4">
-              <div className="flex justify-center">
-                <Image
-                  src={firestoreUser?.profileImage || '/default-profile.png'}
-                  alt="Profile"
-                  width={100}
-                  height={100}
-                  className="rounded-full"
-                />
-              </div>
+            
               <div>
                 <p className="text-gray-600 font-medium">Email:</p>
                 <p className="text-lg">{user.email}</p>
