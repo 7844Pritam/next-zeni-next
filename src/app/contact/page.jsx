@@ -39,7 +39,7 @@ const Contact = () => {
       >
         {/* Dark Overlay for Better Visibility */}
         <div className="absolute inset-0 flex justify-center items-center">
-          <Back title="Contact Us" />
+          {/* <Back title="Contact Us" /> */}
         </div>
       </div>
       <section className="py-6">
