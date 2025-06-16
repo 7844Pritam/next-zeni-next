@@ -14,10 +14,12 @@
     "@heroicons/react": "^2.2.0",
     "@uiw/react-markdown-preview": "^5.1.4",
     "@uiw/react-md-editor": "^4.0.7",
+    "autoprefixer": "^10.4.21",
     "firebase": "^11.9.0",
     "formik": "^2.4.6",
     "framer-motion": "^12.16.0",
     "next": "15.3.3",
+    "postcss": "^8.5.6",
     "quill": "^2.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -27,6 +29,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4.1.10"
   }
 }
