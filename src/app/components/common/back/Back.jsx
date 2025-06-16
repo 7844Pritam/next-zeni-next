@@ -11,7 +11,7 @@ const Back = ({ title }) => {
       setPathname(window.location.pathname.split("/")[1]);
     }
   }, []);
-
+// sdfsd
   return (
     <section className="w-full min-h-[200px] md:min-h-[300px] flex flex-col items-center">
       <Link
