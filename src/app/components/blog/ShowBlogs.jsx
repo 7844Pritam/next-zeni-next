@@ -3,7 +3,6 @@ import { db } from "../../firebase";
 import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import "react-quill/dist/quill.snow.css";
 
 const ShowBlogs = () => {
   const [blogs, setBlogs] = useState([]);
