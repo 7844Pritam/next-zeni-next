@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getAuth, onAuthStateChanged, signOut, sendEmailVerification } from 'firebase/auth';
 import { FaUserCircle, FaUser, FaUserCheck } from 'react-icons/fa'; // Icons for profile and verification status
-import logoImg from '../../../../../public/images/logo.png';
+import logoImg from '../../../../../public/images/logo1.jpeg';
 import { auth,db } from '../../../../app/firebase'; // Adjust path to your Firebase config
 
 const Header = () => {
@@ -106,13 +106,13 @@ const Header = () => {
       <header className="fixed top-2 font-Libre left-3 right-3 z-50 bg-teal-500 rounded-md shadow-md backdrop-blur-md">
         <nav className="container mx-auto px-6 py-3 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex p-1 rounded-full bg-white items-center">
             <Image
               src={logoImg}
               alt="Logo"
-              width={48}
-              height={48}
-              className="rounded-full object-cover"
+              width={40}
+              height={40}
+              className="rounded-full  object-cover"
               priority
             />
           </Link>

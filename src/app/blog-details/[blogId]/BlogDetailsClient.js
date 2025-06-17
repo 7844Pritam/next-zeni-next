@@ -13,7 +13,11 @@ import {
 } from "react-icons/fa";
 import Link from "next/link";
 import MarkdownPreview from '@uiw/react-markdown-preview';
-
+ const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "N/A";
+    const date = timestamp?.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
+    return date.toLocaleString();
+  };
 const BlogDetailsClient = ({ blogId }) => {
   const [blog, setBlog] = useState(null);
   const [blogs, setBlogs] = useState([]);
@@ -99,6 +103,17 @@ const BlogDetailsClient = ({ blogId }) => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return "N/A";
+  const date = timestamp.seconds
+    ? new Date(timestamp.seconds * 1000) // Firestore Timestamp
+    : new Date(timestamp);               // Fallback for string or Date
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
@@ -108,112 +123,150 @@ const BlogDetailsClient = ({ blogId }) => {
     instagram: `https://www.instagram.com/`,
   };
 
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "N/A";
-    const date = timestamp?.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-    return date.toLocaleString();
-  };
+ 
 
   if (loading) return <div className="text-center py-8">Loading blog...</div>;
   if (error) return <div className="text-center text-red-500 py-8">{error}</div>;
 
   return (
-    <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 pt-8 text-black">
-      <div className="flex-1 lg:pr-8">
-        <h1 className="mb-4 text-3xl font-bold text-primary">{blog?.title}</h1>
-        <div className="mb-3 text-xl bg-slate-300 rounded-sm p-4 font-serif text-black">
-          {blog?.subtitle}
-        </div>
+   <div className="max-w-7xl mx-auto px-4 py-8 text-black flex flex-col-reverse lg:flex-row gap-10">
+  {/* Sidebar for Other Blogs */}
+ 
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-white border rounded-xl p-4 shadow-sm mb-4">
-          <div className="text-gray-500 flex-col text-sm space-y-1 flex items-start gap-2">
-            <div className="flex items-center gap-1">
-              <span className="font-semibold">🗓 Published:</span>
-              <span>{formatTimestamp(blog?.createdAt)}</span>
-            </div>
-          </div>
+  {/* Main Blog Section */}
+  <main className="flex-1">
+    {/* Blog Title */}
+    <h1 className="mb-3 text-3xl font-bold text-primary leading-tight">{blog.title}</h1>
+    
+    {/* Subtitle */}
+    {blog.subtitle && (
+      <div className="mb-4 text-lg border border-gray-300 bg-gray-100 p-3 rounded-md font-serif">
+        {blog.subtitle}
+      </div>
+    )}
 
-          <div className="flex flex-wrap items-center gap-3 mt-3 md:mt-0">
-            <a href={shareLinks.facebook} target="_blank" rel="noopener noreferrer" title="Share on Facebook" className="rounded-full bg-blue-100 hover:bg-blue-200 p-2 transition">
-              <FaFacebookF className="text-blue-600 text-lg" />
-            </a>
-            <a href={shareLinks.twitter} target="_blank" rel="noopener noreferrer" title="Share on Twitter" className="rounded-full bg-blue-100 hover:bg-blue-200 p-2 transition">
-              <FaTwitter className="text-blue-400 text-lg" />
-            </a>
-            <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer" title="Share on WhatsApp" className="rounded-full bg-green-100 hover:bg-green-200 p-2 transition">
-              <FaWhatsapp className="text-green-500 text-lg" />
-            </a>
-            <a href={shareLinks.linkedin} target="_blank" rel="noopener noreferrer" title="Share on LinkedIn" className="rounded-full bg-blue-100 hover:bg-blue-200 p-2 transition">
-              <FaLinkedinIn className="text-blue-700 text-lg" />
-            </a>
-            <a href={shareLinks.instagram} target="_blank" rel="noopener noreferrer" title="Share on Instagram" className="rounded-full bg-pink-100 hover:bg-pink-200 p-2 transition">
-              <FaInstagram className="text-pink-500 text-lg" />
-            </a>
-            <button onClick={handleCopyLink} title="Copy Link" className="rounded-full bg-gray-200 hover:bg-gray-300 p-2 transition">
-              <FaLink className="text-gray-600 text-lg" />
-            </button>
-            {copied && <span className="text-sm text-green-600 ml-2">Link copied!</span>}
-          </div>
-        </div>
+    {/* Publish Info + Socials */}
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 bg-white border rounded-md p-4 shadow-sm">
+    <div className="text-sm text-gray-500">
+  <span className="font-semibold">🗓 Published:</span> 12 April, 2025
+</div>
 
-        {blog?.image && (
-          <div className="mb-4">
-            <img src={blog.image} alt={blog.title} className="w-full h-auto rounded-lg object-contain max-h-[400px]" />
-          </div>
-        )}
-      <div className="bg-white text-black p-6 rounded-lg">
-  <MarkdownPreview
-  source={blog.content}
-  wrapperElement={{
-    'data-color-mode': 'light',
-  }}
-  style={{
-    backgroundColor: 'white',
-    color: 'black',
-    padding: '1.5rem',
-    borderRadius: '0.5rem',
-  }}
-/>
+
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Social Share Buttons */}
+        <a href={shareLinks.facebook} target="_blank" rel="noopener noreferrer" title="Facebook"
+          className="bg-blue-100 hover:bg-blue-200 p-2 rounded-full">
+          <FaFacebookF className="text-blue-600" />
+        </a>
+        <a href={shareLinks.twitter} target="_blank" rel="noopener noreferrer" title="Twitter"
+          className="bg-blue-100 hover:bg-blue-200 p-2 rounded-full">
+          <FaTwitter className="text-sky-500" />
+        </a>
+        <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer" title="WhatsApp"
+          className="bg-green-100 hover:bg-green-200 p-2 rounded-full">
+          <FaWhatsapp className="text-green-500" />
+        </a>
+        <a href={shareLinks.linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"
+          className="bg-blue-100 hover:bg-blue-200 p-2 rounded-full">
+          <FaLinkedinIn className="text-blue-700" />
+        </a>
+        <a href={shareLinks.instagram} target="_blank" rel="noopener noreferrer" title="Instagram"
+          className="bg-pink-100 hover:bg-pink-200 p-2 rounded-full">
+          <FaInstagram className="text-pink-500" />
+        </a>
+        <button onClick={handleCopyLink} title="Copy Link"
+          className="bg-gray-200 hover:bg-gray-300 p-2 rounded-full">
+          <FaLink className="text-gray-600" />
+        </button>
+        {copied && <span className="text-sm text-green-600 ml-2">Copied!</span>}
+      </div>
+    </div>
+
+    {/* Blog Image */}
+    {blog.image && (
+      <div className="mb-6">
+        <img
+          src={blog.image}
+          alt={blog.title}
+          className="w-full h-auto max-h-[400px] object-cover rounded-lg shadow-sm"
+        />
+      </div>
+    )}
+
+    {/* Blog Markdown Content */}
+    <div className="prose prose-lg max-w-none content-container">
+      <MarkdownPreview
+        source={blog.content}
+        wrapperElement={{ 'data-color-mode': 'light' }}
+        style={{
+          backgroundColor: 'white',
+          color: 'black',
+          padding: '1rem',
+          borderRadius: '0.5rem',
+        }}
+      />
+    </div>
+
+    {/* Bullet Points */}
+    {blog.bullets?.length > 0 && (
+      <section className="mt-8">
+        <h3 className="text-xl font-semibold mb-2">Key Points</h3>
+        <ul className="list-disc list-inside space-y-1">
+          {blog.bullets.map((point, idx) => (
+            <li key={idx}>{point}</li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {/* Follow Us Section */}
+    <section className="mt-10 border-t border-gray-300 pt-6">
+      <h3 className="text-2xl font-semibold mb-4">Follow Us</h3>
+      <div className="flex flex-wrap gap-4">
+        <SocialButton icon={<FaFacebookF />} label="Facebook" url="https://facebook.com/" color="bg-blue-600" />
+        <SocialButton icon={<FaTwitter />} label="Twitter" url="https://twitter.com/" color="bg-sky-500" />
+        <SocialButton icon={<FaLinkedinIn />} label="LinkedIn" url="https://www.linkedin.com/" color="bg-blue-700" />
+        <SocialButton icon={<FaInstagram />} label="Instagram" url="https://www.instagram.com/" color="bg-gradient-to-r from-pink-500 to-yellow-500" />
+        <SocialButton icon={<FaWhatsapp />} label="WhatsApp" url="https://wa.me/" color="bg-green-500" />
+      </div>
+    </section>
+  </main>
+
+
+   <aside className="hidden lg:block lg:w-1/4">
+  <div className="sticky top-24 bg-teal-100 p-4 rounded-xl shadow-md">
+    <h2 className="text-lg font-semibold mb-3 text-center">Other Blogs</h2>
+    <ul className="list-disc list-inside space-y-2">
+      {blogs
+        .filter(b => b.id !== blogId)
+        .map(b => (
+          <li key={b.id}>
+            <Link href={`/blog-details/${b.id}`} className="text-blue-700 hover:underline text-sm">
+              {b.title}
+            </Link>
+          </li>
+        ))}
+    </ul>
+  </div>
+</aside>
 
 </div>
 
-        {blog?.content ? (
-          <div
-            className="content-container prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: blog.content }}
-          />
-        ) : (
-          <p className="text-gray-400 italic">No content available.</p>
-        )}
-
-        {Array.isArray(blog?.bullets) && blog.bullets.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-2">Key Points</h3>
-            <ul className="list-disc pl-6 space-y-1">
-              {blog.bullets.map((point, idx) => (
-                <li key={idx}>{point}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="mt-10 border-t border-gray-400 pt-6">
-          <h3 className="text-2xl font-semibold mb-4">Related Blogs</h3>
-          <ul className="space-y-3">
-            {blogs
-              .filter((b) => b.id !== blogId)
-              .map(({ id, title }) => (
-                <li key={id}>
-                  <Link href={`/blog-details/${id}`} className="text-blue-600 hover:underline">
-                    {title || "Untitled Blog"}
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </div>
-      </div>
-    </div>
   );
 };
 
 export default BlogDetailsClient;
+
+
+
+const SocialButton = ({ icon, label, url, color }) => (
+  <a
+    href={url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`flex items-center gap-2 px-4 py-2 ${color} text-white rounded-full hover:opacity-90 transition`}
+  >
+    {icon}
+    <span>{label}</span>
+  </a>
+);
