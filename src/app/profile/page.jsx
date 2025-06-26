@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { auth, db, storage } from '../firebase';
 import {
   doc,
   getDoc,
   updateDoc,
-  setDoc,
   collection,
   query,
   where,
@@ -18,61 +17,66 @@ import { useRouter } from 'next/navigation';
 import { PencilIcon, PlusIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setEditMode,
+  setProfileImage,
+  setShowPopup,
+  setMobileNumber,
+  setWriterRequest,
+  getUserProfile,
+  updateUserProfile,
+} from '../redux/user/userActions';
+
 export default function ProfilePage() {
-  const [user, setUser] = useState(null);
-  const [firestoreUser, setFirestoreUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
-  const [profileData, setProfileData] = useState({});
-  const [profileImage, setProfileImage] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
-  const [writerRequest, setWriterRequest] = useState(null);
-  const [mobileNumber, setMobileNumber] = useState('');
+  const dispatch = useDispatch();
   const router = useRouter();
+
+  const {
+    profile,
+    loading,
+    editMode,
+    profileImage,
+    showPopup,
+    mobileNumber,
+    writerRequest,
+  } = useSelector((state) => state.user);
+
+  const user = useSelector((state) => state.auth.user); // Assuming you keep auth user here
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
-        setLoading(false);
-        router.push('/loginscreen');
+        router.push('/auth/login');
         return;
       }
 
-      setUser(firebaseUser);
+      // Load user profile from Firestore via Redux action
+      dispatch(getUserProfile(firebaseUser.uid));
 
+      // Load writerRequest from Firestore
       try {
-        const userRef = doc(db, 'users', firebaseUser.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          setFirestoreUser(userData);
-          setProfileData(userData);
-        }
-
         const requestQuery = query(
           collection(db, 'writerRequests'),
           where('userId', '==', firebaseUser.uid)
         );
         const requestSnap = await getDocs(requestQuery);
         if (!requestSnap.empty) {
-          setWriterRequest(requestSnap.docs[0].data());
+          dispatch(setWriterRequest(requestSnap.docs[0].data()));
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error fetching writer request:', error);
       }
-
-      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [dispatch, router]);
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+
     try {
-      const userRef = doc(db, 'users', user.uid);
-      let imageUrl = firestoreUser?.profileImage;
+      let imageUrl = profile?.profileImage;
 
       if (profileImage) {
         const storageRef = ref(storage, `profileImages/${user.uid}`);
@@ -81,14 +85,14 @@ export default function ProfilePage() {
       }
 
       const updatedData = {
-        ...profileData,
+        ...profile,
         profileImage: imageUrl,
         updatedAt: new Date(),
       };
 
-      await updateDoc(userRef, updatedData);
-      setFirestoreUser(updatedData);
-      setEditMode(false);
+      await updateDoc(doc(db, 'users', user.uid), updatedData);
+      dispatch(updateUserProfile(user.uid, updatedData));
+      dispatch(setEditMode(false));
       alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -99,18 +103,17 @@ export default function ProfilePage() {
   const handleWriterRequest = async (e) => {
     e.preventDefault();
     try {
-      const requestRef = doc(collection(db, 'writerRequests'));
       const requestData = {
         userId: user.uid,
-        name: firestoreUser?.name || user.displayName || 'Unknown',
+        name: profile?.name || user.displayName || 'Unknown',
         email: user.email,
         mobileNumber,
         status: 'pending',
         createdAt: new Date(),
       };
-      await setDoc(requestRef, requestData);
-      setWriterRequest(requestData);
-      setShowPopup(false);
+      await doc(collection(db, 'writerRequests')).set(requestData); // or setDoc(doc(...))
+      dispatch(setWriterRequest(requestData));
+      dispatch(setShowPopup(false));
       alert('Writer request submitted successfully!');
     } catch (error) {
       console.error('Error submitting writer request:', error);
@@ -120,7 +123,7 @@ export default function ProfilePage() {
 
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
-      setProfileImage(e.target.files[0]);
+      dispatch(setProfileImage(e.target.files[0]));
     }
   };
 
@@ -133,7 +136,7 @@ export default function ProfilePage() {
     return 'Unknown';
   };
 
-  if (loading) {
+  if (loading || !profile || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-teal-50">
         <p className="text-teal-500">Loading...</p>
@@ -155,7 +158,7 @@ export default function ProfilePage() {
                     src={
                       profileImage
                         ? URL.createObjectURL(profileImage)
-                        : firestoreUser?.profileImage || '/default-profile.png'
+                        : profile?.profileImage || '/default-profile.png'
                     }
                     alt="Profile"
                     width={100}
@@ -175,9 +178,11 @@ export default function ProfilePage() {
                 <label className="text-gray-600 font-medium">Name:</label>
                 <input
                   type="text"
-                  value={profileData.name || ''}
+                  value={profile.name || ''}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, name: e.target.value })
+                    dispatch(
+                      updateUserProfile(user.uid, { name: e.target.value })
+                    )
                   }
                   className="w-full p-2 border rounded"
                 />
@@ -185,9 +190,11 @@ export default function ProfilePage() {
               <div>
                 <label className="text-gray-600 font-medium">Bio:</label>
                 <textarea
-                  value={profileData.bio || ''}
+                  value={profile.bio || ''}
                   onChange={(e) =>
-                    setProfileData({ ...profileData, bio: e.target.value })
+                    dispatch(
+                      updateUserProfile(user.uid, { bio: e.target.value })
+                    )
                   }
                   className="w-full p-2 border rounded"
                 />
@@ -201,7 +208,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setEditMode(false)}
+                  onClick={() => dispatch(setEditMode(false))}
                   className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                 >
                   Cancel
@@ -210,45 +217,69 @@ export default function ProfilePage() {
             </form>
           ) : (
             <div className="space-y-4">
-            
               <div>
                 <p className="text-gray-600 font-medium">Email:</p>
                 <p className="text-lg">{user.email}</p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Name:</p>
-                <p className="text-lg">{firestoreUser?.name || 'Not set'}</p>
+                <p className="text-lg">{profile?.name || 'Not set'}</p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Bio:</p>
-                <p className="text-lg">
-                  {firestoreUser?.bio || 'No bio provided'}
-                </p>
+                <p className="text-lg">{profile?.bio || 'No bio provided'}</p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Role:</p>
-                <p className="text-lg">{firestoreUser?.whoIs || 'Student'}</p>
+                <p className="text-lg">{profile?.whoIs || 'Student'}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-600 font-medium">Create Blog Permission:</p>
+                <p className="text-lg">
+                  {profile?.isCreatePermission ? 'Yes' : 'No'}
+                </p>
               </div>
               <div>
-                <p className="text-gray-600 font-medium">Account Created:</p>
+                <p className="text-gray-600 font-medium">Course Content Permission:</p>
                 <p className="text-lg">
-                  {formatTimestamp(firestoreUser?.createdAt)}
+                  {profile?.isCourseContentCreatePermission ? 'Yes' : 'No'}
                 </p>
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="mt-2 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 flex items-center"
-                >
-                  <PencilIcon className="h-4 w-4 mr-2" /> Edit Profile
-                </button>
               </div>
-              {firestoreUser?.whoIs !== 'Blog Writer' && !writerRequest && (
+              <div>
+                <p className="text-gray-600 font-medium">Course with Video Permission:</p>
+                <p className="text-lg">
+                  {profile?.isCourseWithVideoCreatePermission ? 'Yes' : 'No'}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600 font-medium">Vlog Creation Permission:</p>
+                <p className="text-lg">
+                  {profile?.isVlogCreatePermission ? 'Yes' : 'No'}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-gray-600 font-medium">Account Created:</p>
+                <p className="text-lg">{formatTimestamp(profile?.createdAt)}</p>
+              </div>
+
+              <button
+                onClick={() => dispatch(setEditMode(true))}
+                className="mt-2 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 flex items-center"
+              >
+                <PencilIcon className="h-4 w-4 mr-2" /> Edit Profile
+              </button>
+
+              {profile?.whoIs !== 'Blog Writer' && !writerRequest && (
                 <button
-                  onClick={() => router.push('/my-blogs')}
+                  onClick={() => dispatch(setShowPopup(true))}
                   className="mt-4 bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-600 flex items-center"
                 >
                   <PlusIcon className="h-5 w-5 mr-2" /> Become a Blog Writer
                 </button>
               )}
+
               {writerRequest && writerRequest.status === 'pending' && (
                 <p className="mt-4 text-orange-500 font-medium">
                   Your request to become a blog writer is pending.
@@ -263,7 +294,6 @@ export default function ProfilePage() {
                   Create Blog
                 </button>
               )}
-
             </div>
           )}
         </div>
@@ -281,7 +311,7 @@ export default function ProfilePage() {
                 <label className="text-gray-600 font-medium">Name:</label>
                 <input
                   type="text"
-                  value={firestoreUser?.name || user.displayName || ''}
+                  value={profile?.name || user.displayName || ''}
                   disabled
                   className="w-full p-2 border rounded bg-gray-100"
                 />
@@ -296,13 +326,11 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="text-gray-600 font-medium">
-                  Mobile Number:
-                </label>
+                <label className="text-gray-600 font-medium">Mobile Number:</label>
                 <input
                   type="tel"
                   value={mobileNumber}
-                  onChange={(e) => setMobileNumber(e.target.value)}
+                  onChange={(e) => dispatch(setMobileNumber(e.target.value))}
                   required
                   className="w-full p-2 border rounded"
                   placeholder="Enter your mobile number"
@@ -317,7 +345,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowPopup(false)}
+                  onClick={() => dispatch(setShowPopup(false))}
                   className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                 >
                   Cancel

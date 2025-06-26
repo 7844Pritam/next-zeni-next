@@ -1,20 +1,26 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getAuth, onAuthStateChanged, signOut, sendEmailVerification } from 'firebase/auth';
-import { FaUserCircle, FaUser, FaUserCheck } from 'react-icons/fa'; // Icons for profile and verification status
+import { sendEmailVerification } from 'firebase/auth';
+// import { useDispatch, useSelector } from 'react-redux';
+import { FaUser, FaUserCheck } from 'react-icons/fa';
+
 import logoImg from '../../../../../public/images/logo1.jpeg';
-import { auth,db } from '../../../../app/firebase'; // Adjust path to your Firebase config
+
+import { logoutUser, monitorAuth } from '@/app/redux/auth/authActions';
+import { clearUserProfile, getUserProfile } from '@/app/redux/user/userActions';
+import {  useDispatch, useSelector } from 'react-redux';
 
 const Header = () => {
   const [click, setClick] = useState(false);
-  const [user, setUser] = useState(null); // Store authenticated user
-  const [isAdmin, setIsAdmin] = useState(false); // Admin status
-  const [isVerified, setIsVerified] = useState(false); // Email verification status
-  const [verificationMessage, setVerificationMessage] = useState(''); // Message for resend action
+  const [verificationMessage, setVerificationMessage] = useState('');
+
+  const dispatch = useDispatch();
+  const { user, isVerified, isAdmin } = useSelector((state) => state.auth);
+  const { profile } = useSelector((state) => state.user);
 
   const navItems = [
     { name: 'Home', id: 'home', path: '/' },
@@ -25,62 +31,46 @@ const Header = () => {
     { name: 'Contact', id: 'contact', path: '/contact' },
   ];
 
-  // Monitor authentication and verification state
+  // Init auth listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        setIsVerified(currentUser.emailVerified);
-        // Check if user is admin (e.g., via custom claims)
-        const token = await currentUser.getIdTokenResult();
-        setIsAdmin(!!token.claims.admin); // Assumes 'admin' custom claim
-      } else {
-        setIsAdmin(false);
-        setIsVerified(false);
-      }
-    });
+    dispatch(monitorAuth());
+  }, [dispatch]);
 
-    return () => unsubscribe();
-  }, [auth]);
-
-  // Handle logout
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-      setIsAdmin(false);
-      setIsVerified(false);
-    } catch (error) {
-      console.error('Logout error:', error);
+  // Fetch user profile
+  useEffect(() => {
+    if (user) {
+      dispatch(getUserProfile(user.uid));
+    } else {
+      dispatch(clearUserProfile());
     }
+  }, [dispatch, user]);
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
   };
 
-  // Resend verification email
   const handleResendVerification = async () => {
     if (user && !isVerified) {
       try {
         await sendEmailVerification(user);
-        setVerificationMessage('Verification email sent! Please check your inbox.');
-        setTimeout(() => setVerificationMessage(''), 5000); // Clear message after 5 seconds
+        setVerificationMessage('Verification email sent!');
+        setTimeout(() => setVerificationMessage(''), 5000);
       } catch (error) {
-        console.error('Error sending verification email:', error);
-        setVerificationMessage('Failed to send verification email. Try again later.');
+        console.error('Verification error:', error);
+        setVerificationMessage('Failed to send verification email.');
         setTimeout(() => setVerificationMessage(''), 5000);
       }
     }
   };
 
   const handleScrollToSection = (sectionId) => {
-    if (typeof window !== 'undefined') {
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      setClick(false);
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    setClick(false);
   };
 
-  // Animation variants for mobile menu
   const menuVariants = {
     hidden: { x: '-100%', opacity: 0 },
     visible: {
@@ -91,7 +81,6 @@ const Header = () => {
     exit: { x: '-100%', opacity: 0, transition: { duration: 0.3 } },
   };
 
-  // Animation variants for nav items
   const navItemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i) => ({
@@ -112,23 +101,18 @@ const Header = () => {
               alt="Logo"
               width={40}
               height={40}
-              className="rounded-full  object-cover"
+              className="rounded-full object-cover"
               priority
             />
           </Link>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile toggle */}
           <div
-            className="md:hidden text-2xl cursor-pointer text-gray-800"
+            className="md:hidden text-2xl relative z-40 cursor-pointer text-gray-800"
             onClick={() => setClick(!click)}
-            aria-label={click ? 'Close menu' : 'Open menu'}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                setClick(!click);
-              }
-            }}
+            aria-label="Toggle menu"
           >
             <motion.span
               animate={{ rotate: click ? 45 : 0, y: click ? 7 : 0 }}
@@ -144,27 +128,24 @@ const Header = () => {
             />
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Nav */}
           <ul className="hidden md:flex items-center gap-6">
             {navItems.map((item, index) => (
               <motion.li
-                key={index}
+                key={item.name}
                 className="text-base font-medium"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial="hidden"
+                animate="visible"
                 transition={{ delay: index * 0.1 }}
               >
                 {item.path ? (
-                  <Link
-                    href={item.path}
-                    className="text-white hover:text-orange-500 transition-colors duration-300"
-                  >
+                  <Link href={item.path} className="text-white hover:text-orange-500">
                     {item.name}
                   </Link>
                 ) : (
                   <button
                     onClick={() => handleScrollToSection(item.id)}
-                    className="text-gray-700 hover:text-orange-500 transition-colors duration-300"
+                    className="text-white hover:text-orange-500"
                   >
                     {item.name}
                   </button>
@@ -173,84 +154,69 @@ const Header = () => {
             ))}
           </ul>
 
-          {/* Desktop Buttons */}
+          {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                href="/contact"
-                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-300 text-sm font-medium"
-              >
-                Get Certificate
-              </Link>
-            </motion.div>
+            <Link
+              href="/contact"
+              className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm hover:bg-orange-600"
+            >
+              Get Certificate
+            </Link>
+
             {user ? (
-              <div className="flex items-center gap-4">
-                {/* Profile Icon with Verification Status */}
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  title={isVerified ? 'Verified User' : 'Please verify your email'}
-                >
-                  <Link href="/profile" className="text-white">
-                    {isVerified ? <FaUserCheck size={24} /> : <FaUser size={24} />}
-                  </Link>
-                </motion.div>
-                {/* Resend Verification Button (if unverified) */}
+              <>
+                <Link href="/profile" className="text-white" title={isVerified ? 'Verified' : 'Unverified'}>
+                  {isVerified ? <FaUserCheck size={24} /> : <FaUser size={24} />}
+                </Link>
+
                 {!isVerified && (
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <button
-                      onClick={handleResendVerification}
-                      className="text-white text-sm underline hover:text-orange-500 transition-colors duration-300"
-                    >
-                      Verify Email
-                    </button>
-                  </motion.div>
-                )}
-                {/* Logout Button */}
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <button
-                    onClick={handleLogout}
-                    className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-2 rounded-full hover:from-gray-900 hover:to-black transition-all duration-300 text-sm font-medium"
+                    onClick={handleResendVerification}
+                    className="text-white text-sm underline hover:text-orange-300"
                   >
-                    Logout
+                    Verify Email
                   </button>
-                </motion.div>
-              </div>
+                )}
+
+                <button
+                  onClick={handleLogout}
+                  className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-black"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  href="/auth/login"
-                  className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-2 rounded-full hover:from-gray-900 hover:to-black transition-all duration-300 text-sm font-medium"
-                >
-                  Login
-                </Link>
-              </motion.div>
+              <Link
+                href="/auth/login"
+                className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-black"
+              >
+                Login
+              </Link>
             )}
+
             {isAdmin && (
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link
-                  href="/admin/all-blogs"
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-300 text-sm font-medium"
-                >
-                  Admin
-                </Link>
-              </motion.div>
+              <Link
+                href="/admin/all-blogs"
+                className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm hover:bg-orange-600"
+              >
+                Admin
+              </Link>
             )}
           </div>
         </nav>
 
-        {/* Verification Message (for resend feedback) */}
+        {/* Verification message */}
         {verificationMessage && (
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md shadow-md z-50">
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md z-50">
             {verificationMessage}
           </div>
         )}
 
-        {/* Mobile Navigation */}
+        {/* Mobile Nav */}
         <AnimatePresence>
           {click && (
             <motion.ul
-              className="fixed top-0 left-0 w-full h-screen bg-gradient-to-b from-orange-500 to-purple-600 flex flex-col items-center justify-center gap-6 md:hidden"
+              className="fixed top-0 left-0 w-full h-screen bg-gradient-to-b from-teal-500 to-teal-600 flex flex-col items-center justify-center gap-6 md:hidden"
               variants={menuVariants}
               initial="hidden"
               animate="visible"
@@ -258,137 +224,51 @@ const Header = () => {
             >
               {navItems.map((item, index) => (
                 <motion.li
-                  key={index}
-                  className="text-lg font-semibold"
+                  key={item.name}
+                  className="text-lg"
                   custom={index}
                   variants={navItemVariants}
                   initial="hidden"
                   animate="visible"
                 >
                   {item.path ? (
-                    <Link
-                      href={item.path}
-                      onClick={() => setClick(false)}
-                      className="text-white hover:text-gray-200 transition-colors duration-300"
-                    >
+                    <Link href={item.path} onClick={() => setClick(false)} className="text-white">
                       {item.name}
                     </Link>
                   ) : (
-                    <button
-                      onClick={() => {
-                        handleScrollToSection(item.id);
-                        setClick(false);
-                      }}
-                      className="text-white hover:text-gray-200 transition-colors duration-300"
-                    >
+                    <button onClick={() => handleScrollToSection(item.id)} className="text-white">
                       {item.name}
                     </button>
                   )}
                 </motion.li>
               ))}
-              {/* Mobile Buttons */}
-              <motion.li
-                className="text-lg font-semibold"
-                custom={navItems.length}
-                variants={navItemVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                <Link
-                  href="/contact"
-                  onClick={() => setClick(false)}
-                  className="text-white hover:text-gray-200 transition-colors duration-300"
-                >
-                  Get Certificate
-                </Link>
-              </motion.li>
+
               {user ? (
                 <>
-                  <motion.li
-                    className="text-lg font-semibold"
-                    custom={navItems.length + 1}
-                    variants={navItemVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    <Link
-                      href="/profile"
-                      onClick={() => setClick(false)}
-                      className="text-white hover:text-gray-200 transition-colors duration-300"
-                    >
-                      Profile {isVerified ? '(Verified)' : '(Unverified)'}
-                    </Link>
-                  </motion.li>
+                  <Link href="/profile" className="text-white" onClick={() => setClick(false)}>
+                    Profile {isVerified ? '(Verified)' : '(Unverified)'}
+                  </Link>
+
                   {!isVerified && (
-                    <motion.li
-                      className="text-lg font-semibold"
-                      custom={navItems.length + 2}
-                      variants={navItemVariants}
-                      initial="hidden"
-                      animate="visible"
-                    >
-                      <button
-                        onClick={() => {
-                          handleResendVerification();
-                          setClick(false);
-                        }}
-                        className="text-white hover:text-gray-200 transition-colors duration-300"
-                      >
-                        Verify Email
-                      </button>
-                    </motion.li>
-                  )}
-                  <motion.li
-                    className="text-lg font-semibold"
-                    custom={navItems.length + (isVerified ? 2 : 3)}
-                    variants={navItemVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setClick(false);
-                      }}
-                      className="text-white hover:text-gray-200 transition-colors duration-300"
-                    >
-                      Logout
+                    <button onClick={handleResendVerification} className="text-white">
+                      Verify Email
                     </button>
-                  </motion.li>
+                  )}
+
+                  <button onClick={handleLogout} className="text-white">
+                    Logout
+                  </button>
                 </>
               ) : (
-                <motion.li
-                  className="text-lg font-semibold"
-                  custom={navItems.length + 1}
-                  variants={navItemVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <Link
-                    href="/auth/login"
-                    onClick={() => setClick(false)}
-                    className="text-white hover:text-gray-200 transition-colors duration-300"
-                  >
-                    Login
-                  </Link>
-                </motion.li>
+                <Link href="/auth/login" className="text-white" onClick={() => setClick(false)}>
+                  Login
+                </Link>
               )}
+
               {isAdmin && (
-                <motion.li
-                  className="text-lg font-semibold"
-                  custom={navItems.length + (user ? (isVerified ? 3 : 4) : 2)}
-                  variants={navItemVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <Link
-                    href="/admin/all-blogs"
-                    onClick={() => setClick(false)}
-                    className="text-white hover:text-gray-200 transition-colors duration-300"
-                  >
-                    Admin
-                  </Link>
-                </motion.li>
+                <Link href="/admin/all-blogs" className="text-white" onClick={() => setClick(false)}>
+                  Admin
+                </Link>
               )}
             </motion.ul>
           )}
