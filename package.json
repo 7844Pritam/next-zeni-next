@@ -26,7 +26,7 @@
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
     "react-redux": "^9.2.0",
-    "redux": "^4.2.1",
+    "redux": "^5.0.1",
     "redux-devtools-extension": "^2.13.9",
     "redux-thunk": "^3.1.0",
     "simplemde": "^1.11.2",

@@ -1,5 +1,5 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux';
-import { thunk } from 'redux-thunk'; // ✅ FIXED
+import { thunk } from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
 import authReducer from './auth/authReducer';
@@ -12,7 +12,7 @@ const rootReducer = combineReducers({
 
 const store = createStore(
   rootReducer,
-  composeWithDevTools(applyMiddleware(thunk)) // 👍 This is now valid
+  composeWithDevTools(applyMiddleware(thunk)) 
 );
 
 export default store;
