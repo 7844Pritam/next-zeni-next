@@ -136,13 +136,13 @@ export default function ProfilePage() {
     return 'Unknown';
   };
 
-  if (loading || !profile || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-teal-50">
-        <p className="text-teal-500">Loading...</p>
-      </div>
-    );
-  }
+  // if (loading || !profile || !user) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-teal-50">
+  //       <p className="text-teal-500">Loading...</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-teal-50 p-6">
