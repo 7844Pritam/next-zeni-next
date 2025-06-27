@@ -1,10 +1,11 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect } from 'react';
 import { auth, db, storage } from '../firebase';
 import {
   doc,
-  getDoc,
   updateDoc,
   collection,
   query,
@@ -16,7 +17,6 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useRouter } from 'next/navigation';
 import { PencilIcon, PlusIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
-
 import { useSelector, useDispatch } from 'react-redux';
 import {
   setEditMode,
@@ -42,7 +42,26 @@ export default function ProfilePage() {
     writerRequest,
   } = useSelector((state) => state.user);
 
-  const user = useSelector((state) => state.auth.user); // Assuming you keep auth user here
+  const user = useSelector((state) => state.auth.user);
+
+  // Dummy fallback data
+  const dummyProfile = {
+    name: 'John Doe',
+    bio: 'Aspiring blog writer.',
+    whoIs: 'Student',
+    isCreatePermission: false,
+    isCourseContentCreatePermission: false,
+    isCourseWithVideoCreatePermission: false,
+    isVlogCreatePermission: false,
+    createdAt: new Date(),
+    profileImage: '/default-profile.png',
+  };
+
+  const dummyUser = {
+    email: 'noemail@example.com',
+    uid: 'dummyuid',
+    displayName: 'Guest',
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -51,10 +70,8 @@ export default function ProfilePage() {
         return;
       }
 
-      // Load user profile from Firestore via Redux action
       dispatch(getUserProfile(firebaseUser.uid));
 
-      // Load writerRequest from Firestore
       try {
         const requestQuery = query(
           collection(db, 'writerRequests'),
@@ -76,24 +93,28 @@ export default function ProfilePage() {
     e.preventDefault();
 
     try {
-      let imageUrl = profile?.profileImage;
+      let imageUrl = profile?.profileImage || dummyProfile.profileImage;
 
-      if (profileImage) {
+      if (profileImage && user?.uid) {
         const storageRef = ref(storage, `profileImages/${user.uid}`);
         await uploadBytes(storageRef, profileImage);
         imageUrl = await getDownloadURL(storageRef);
       }
 
       const updatedData = {
-        ...profile,
+        ...(profile || dummyProfile),
         profileImage: imageUrl,
         updatedAt: new Date(),
       };
 
-      await updateDoc(doc(db, 'users', user.uid), updatedData);
-      dispatch(updateUserProfile(user.uid, updatedData));
-      dispatch(setEditMode(false));
-      alert('Profile updated successfully!');
+      if (user?.uid) {
+        await updateDoc(doc(db, 'users', user.uid), updatedData);
+        dispatch(updateUserProfile(user.uid, updatedData));
+        dispatch(setEditMode(false));
+        alert('Profile updated successfully!');
+      } else {
+        throw new Error('User not authenticated');
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Failed to update profile.');
@@ -104,14 +125,15 @@ export default function ProfilePage() {
     e.preventDefault();
     try {
       const requestData = {
-        userId: user.uid,
-        name: profile?.name || user.displayName || 'Unknown',
-        email: user.email,
+        userId: user?.uid || dummyUser.uid,
+        name: profile?.name || user?.displayName || dummyProfile.name,
+        email: user?.email || dummyUser.email,
         mobileNumber,
         status: 'pending',
         createdAt: new Date(),
       };
-      await doc(collection(db, 'writerRequests')).set(requestData); // or setDoc(doc(...))
+
+      await doc(collection(db, 'writerRequests')).set(requestData);
       dispatch(setWriterRequest(requestData));
       dispatch(setShowPopup(false));
       alert('Writer request submitted successfully!');
@@ -132,21 +154,27 @@ export default function ProfilePage() {
       return timestamp.toDate().toLocaleString();
     } else if (timestamp?.seconds) {
       return new Date(timestamp.seconds * 1000).toLocaleString();
+    } else if (timestamp instanceof Date) {
+      return timestamp.toLocaleString();
     }
     return 'Unknown';
   };
 
-  // if (loading || !profile || !user) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-teal-50">
-  //       <p className="text-teal-500">Loading...</p>
-  //     </div>
-  //   );
-  // }
+  // Use dummy data if profile or user is not available
+  const finalProfile = profile || dummyProfile;
+  const currentUser = user || dummyUser;
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-teal-50">
+        <p className="text-teal-500">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-teal-50 p-6">
-      {/* Profile Section */}
       <section id="profile" className="mb-8">
         <div className="border border-teal-200 bg-white mt-24 p-6 rounded-xl max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold mb-4 text-teal-500">Profile</h2>
@@ -158,7 +186,7 @@ export default function ProfilePage() {
                     src={
                       profileImage
                         ? URL.createObjectURL(profileImage)
-                        : profile?.profileImage || '/default-profile.png'
+                        : finalProfile.profileImage
                     }
                     alt="Profile"
                     width={100}
@@ -178,10 +206,12 @@ export default function ProfilePage() {
                 <label className="text-gray-600 font-medium">Name:</label>
                 <input
                   type="text"
-                  value={profile.name || ''}
+                  value={finalProfile.name}
                   onChange={(e) =>
                     dispatch(
-                      updateUserProfile(user.uid, { name: e.target.value })
+                      updateUserProfile(currentUser.uid, {
+                        name: e.target.value,
+                      })
                     )
                   }
                   className="w-full p-2 border rounded"
@@ -190,10 +220,12 @@ export default function ProfilePage() {
               <div>
                 <label className="text-gray-600 font-medium">Bio:</label>
                 <textarea
-                  value={profile.bio || ''}
+                  value={finalProfile.bio}
                   onChange={(e) =>
                     dispatch(
-                      updateUserProfile(user.uid, { bio: e.target.value })
+                      updateUserProfile(currentUser.uid, {
+                        bio: e.target.value,
+                      })
                     )
                   }
                   className="w-full p-2 border rounded"
@@ -219,59 +251,55 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div>
                 <p className="text-gray-600 font-medium">Email:</p>
-                <p className="text-lg">{user.email}</p>
+                <p className="text-lg">{currentUser.email}</p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Name:</p>
-                <p className="text-lg">{profile?.name || 'Not set'}</p>
+                <p className="text-lg">{finalProfile.name}</p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Bio:</p>
-                <p className="text-lg">{profile?.bio || 'No bio provided'}</p>
+                <p className="text-lg">{finalProfile.bio}</p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Role:</p>
-                <p className="text-lg">{profile?.whoIs || 'Student'}</p>
+                <p className="text-lg">{finalProfile.whoIs}</p>
               </div>
-
               <div>
                 <p className="text-gray-600 font-medium">Create Blog Permission:</p>
                 <p className="text-lg">
-                  {profile?.isCreatePermission ? 'Yes' : 'No'}
+                  {finalProfile.isCreatePermission ? 'Yes' : 'No'}
                 </p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Course Content Permission:</p>
                 <p className="text-lg">
-                  {profile?.isCourseContentCreatePermission ? 'Yes' : 'No'}
+                  {finalProfile.isCourseContentCreatePermission ? 'Yes' : 'No'}
                 </p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Course with Video Permission:</p>
                 <p className="text-lg">
-                  {profile?.isCourseWithVideoCreatePermission ? 'Yes' : 'No'}
+                  {finalProfile.isCourseWithVideoCreatePermission ? 'Yes' : 'No'}
                 </p>
               </div>
               <div>
                 <p className="text-gray-600 font-medium">Vlog Creation Permission:</p>
                 <p className="text-lg">
-                  {profile?.isVlogCreatePermission ? 'Yes' : 'No'}
+                  {finalProfile.isVlogCreatePermission ? 'Yes' : 'No'}
                 </p>
               </div>
-
               <div>
                 <p className="text-gray-600 font-medium">Account Created:</p>
-                <p className="text-lg">{formatTimestamp(profile?.createdAt)}</p>
+                <p className="text-lg">{formatTimestamp(finalProfile.createdAt)}</p>
               </div>
-
               <button
                 onClick={() => dispatch(setEditMode(true))}
                 className="mt-2 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 flex items-center"
               >
                 <PencilIcon className="h-4 w-4 mr-2" /> Edit Profile
               </button>
-
-              {profile?.whoIs !== 'Blog Writer' && !writerRequest && (
+              {finalProfile.whoIs !== 'Blog Writer' && !writerRequest && (
                 <button
                   onClick={() => dispatch(setShowPopup(true))}
                   className="mt-4 bg-teal-500 text-white px-4 py-2 rounded hover:bg-teal-600 flex items-center"
@@ -279,13 +307,11 @@ export default function ProfilePage() {
                   <PlusIcon className="h-5 w-5 mr-2" /> Become a Blog Writer
                 </button>
               )}
-
               {writerRequest && writerRequest.status === 'pending' && (
                 <p className="mt-4 text-orange-500 font-medium">
                   Your request to become a blog writer is pending.
                 </p>
               )}
-
               {writerRequest && writerRequest.status === 'confirmed' && (
                 <button
                   onClick={() => router.push('/my-blogs')}
@@ -299,7 +325,6 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Popup for Writer Request */}
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-md max-w-md w-full">
@@ -311,7 +336,7 @@ export default function ProfilePage() {
                 <label className="text-gray-600 font-medium">Name:</label>
                 <input
                   type="text"
-                  value={profile?.name || user.displayName || ''}
+                  value={finalProfile.name || currentUser.displayName}
                   disabled
                   className="w-full p-2 border rounded bg-gray-100"
                 />
@@ -320,7 +345,7 @@ export default function ProfilePage() {
                 <label className="text-gray-600 font-medium">Email:</label>
                 <input
                   type="email"
-                  value={user.email}
+                  value={currentUser.email}
                   disabled
                   className="w-full p-2 border rounded bg-gray-100"
                 />
@@ -329,7 +354,7 @@ export default function ProfilePage() {
                 <label className="text-gray-600 font-medium">Mobile Number:</label>
                 <input
                   type="tel"
-                  value={mobileNumber}
+                  value={mobileNumber || ''}
                   onChange={(e) => dispatch(setMobileNumber(e.target.value))}
                   required
                   className="w-full p-2 border rounded"
