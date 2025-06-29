@@ -81,10 +81,12 @@ const AddBlogs = () => {
 
       const blogData = {
         title,
+        
         subtitle,
         content,
         image: imageUrl,
         userId,
+        isApproved:false,
         createdAt: new Date(),
       };
 

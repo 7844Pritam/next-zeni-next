@@ -1,10 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    images: {
-        domains: ["placehold.co", 'plus.unsplash.com', 'encrypted-tbn0.gstatic.com', "lowqualitymemes.com",
-            "encrypted-tbn0.gstatic.com",
-            "placehold.co",], // Add this line
-    },
+  images: {
+    domains: [
+      "placehold.co",
+      "plus.unsplash.com",
+      "encrypted-tbn0.gstatic.com",
+      "lowqualitymemes.com",
+    ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        pathname: "/v0/b/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

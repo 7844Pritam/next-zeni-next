@@ -1,9 +1,8 @@
-
 'use client'
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import Link from "next/link";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 const ShowBlogs = () => {
   const [blogs, setBlogs] = useState([]);
@@ -13,7 +12,8 @@ const ShowBlogs = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "blogs"));
+        const blogsQuery = query(collection(db, "blogs"), where("isApproved", "==", true));
+        const querySnapshot = await getDocs(blogsQuery);
         const blogsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -31,19 +31,18 @@ const ShowBlogs = () => {
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
   if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
-  if (blogs.length === 0) return <div className="text-center py-10">No blogs available</div>;
+  if (blogs.length === 0) return <div className="text-center py-10">No approved blogs available</div>;
 
   return (
     <div className="flex justify-center px-4 py-8" id="blogs">
       <div className="max-w-7xl w-full">
-        <h1 className="text-4xl sm:text-5xl py-6 font-extrabold text-center text-gray-900 bg-gradient-to-r from-primary via-secondary to-pink-500 text-transparent bg-clip-text">
+        <h1 className="text-4xl sm:text-5xl py-6 font-extrabold text-center text-gray-900 bg-gradient-to-r from-primary via-secondary to-pink-500 bg-clip-text">
           Our Blogs
         </h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-4">
           {blogs.map((blog) => (
             <div
-              onClick={() => navigate(`blog/${blog.id}`)}
               key={blog.id}
               className="p-4 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all bg-white"
             >

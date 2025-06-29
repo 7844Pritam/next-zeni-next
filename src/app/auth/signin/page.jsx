@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CustomInput from '../../components/InputAndButton/CustomInput';
 import CustomButton from '../../components/InputAndButton/CustomButton';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
@@ -49,7 +49,7 @@ export default function SignUpPage() {
         const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
         const user = userCredential.user;
 
-        await addDoc(collection(db, 'users'), {
+        await addDoc(collection(db, 'users',user.id), {
           uid: user.uid,
           name: values.name,
           email: user.email,
