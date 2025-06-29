@@ -25,6 +25,7 @@ import {
   InformationCircleIcon,
   ClockIcon,
   CheckCircleIcon,
+  PhoneIcon,
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useSelector, useDispatch } from 'react-redux';
