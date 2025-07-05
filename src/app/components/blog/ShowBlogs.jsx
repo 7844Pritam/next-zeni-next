@@ -39,7 +39,7 @@ const ShowBlogs = () => {
           Our Blogs
         </h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-4">
           {blogs.map((blog) => (
             <div
               // onClick={() => navigate(`blog/${blog.id}`)}

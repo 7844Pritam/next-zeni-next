@@ -34,7 +34,7 @@ const ShowBlogs = () => {
   if (blogs.length === 0) return <div className="text-center py-10">No approved blogs available</div>;
 
   return (
-    <div className="flex justify-center px-4 py-8" id="blogs">
+    <div className="flex justify-center px-4 py-18" id="blogs">
       <div className="max-w-7xl w-full">
         <h1 className="text-4xl sm:text-5xl py-6 font-extrabold text-center text-gray-900 bg-gradient-to-r from-primary via-secondary to-pink-500 bg-clip-text">
           Our Blogs

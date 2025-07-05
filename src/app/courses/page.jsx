@@ -5,7 +5,7 @@ import { coursesCard } from "../dummydata";
 const HAbout = () => {
   return (
     <>
-      <section id="courses" className="bg-gray-100 py-10">
+      <section id="courses" className="bg-gray-100 py-14">
         <div className="mx-auto px-4 py-10 max-w-screen-xl">
           {/* Heading Section */}
           <Heading
