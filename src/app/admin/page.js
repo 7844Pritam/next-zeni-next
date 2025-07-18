@@ -128,11 +128,14 @@ const AdminPanel = () => {
   };
 
   const startEdit = (blog) => {
-    setEditId(blog.id);
-    setEditTitle(blog.title);
-    setEditContent(blog.content);
-    setShowModal(true);
-  };
+    // setEditId(blog.id);
+    // setEditTitle(blog.title);
+    // setEditContent(blog.content);
+    // setShowModal(true);
+            router.push(`/admin/my-blogs/edit/${blog.id}`);
+
+  };  
+
 
   const saveEdit = async () => {
     const blogRef = doc(db, 'blogs', editId);
