@@ -1,143 +1,47 @@
 'use client';
-import React from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { FaLinkedin, FaFacebookF, FaTwitter, FaInstagram, FaYoutube, FaMapMarkerAlt, FaPhoneAlt, FaPaperPlane } from "react-icons/fa";
+import React from "react";
+import img from '../../../../../public/footer.svg';
 
-
-const Footer = () => {
+const CustomFooter = () => {
   return (
-    <footer className="bg-teal-700 text-white py-14 px-11 ">
-      <div className="px-6">
-        <div className="flex flex-col sm:flex-row lg:flex-row justify-between gap-8">
-          {/* First Section */}
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold mb-2">NEXTZENI</h1>
-            <span className="block ">ONLINE EDUCATION & LEARNING</span>
-            <p className="mt-4 ">Empower Your Voice, Elevate Your Impact!</p>
-            <div className="flex space-x-4 mt-4 text-xl">
-              <a
-                href="https://www.facebook.com/profile.php?id=61571258289396"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-              > 
-                <FaFacebookF />
-              </a>
-              <a
-                href="https://x.com/next_zeni"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Twitter"
-              >
-                <FaTwitter />
-              </a>
-              <a
-                href="https://www.instagram.com/nextzeni/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-              >
-                <FaInstagram />
-              </a>
-              <a
-                href="https://www.youtube.com/@NextZeni"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="YouTube"
-              >
-                <FaYoutube />
-              </a>
-              <a
-                href="https://www.linkedin.com/company/nextzeni"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-              >
-                <FaLinkedin />
-              </a>
-            </div>
-          </div>
-
-          {/* Explore Section */}
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-4">Explore</h3>
-            <ul className="space-y-2 ">
-              <li>
-                <Link href="/about">About Us</Link>
-              </li>
-              <li>
-                <Link href="/courses">Services</Link>
-              </li>
-              <li>
-                <Link href="/courses">Courses</Link>
-              </li>
-              <li>
-                <Link href="/journal">Blog</Link>
-              </li>
-              <li>
-                <Link href="/contact">Contact Us</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Quick Links Section */}
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 ">
-              <li>
-                <Link href="/contact">Contact Us</Link>
-              </li>
-              <li>
-                <Link href="/pricing">Pricing</Link>
-              </li>
-              <li>
-                <Link href="/">Terms & Conditions</Link>
-              </li>
-              <li>
-                <Link href="/">Privacy</Link>
-              </li>
-              <li>
-                <Link href="/">Feedbacks</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Section */}
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-4">Have a Questions?</h3>
-            <ul className="space-y-4">
-              <li className="flex items-center space-x-3">
-                <FaMapMarkerAlt className="text-xl" />
-                <span className="text-sm">
-                  E-3/44, Vijayipur, Vishesh Khand 3, Gomti Nagar, Lucknow, Uttar Pradesh 226010
-                </span>
-              </li>
-              <li className="flex items-center space-x-3">
-                <FaPhoneAlt className="text-xl" />
-                <a href="tel:+916307749532" className="text-sm">
-                  +91 630 774 9532
-                </a>
-              </li>
-              <li className="flex items-center space-x-3">
-                <FaPaperPlane className="text-xl" />
-                <a href="mailto:yournextzeni@gmail.com" className="text-sm">
-                  yournextzeni@gmail.com
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+    <footer className="relative border rounded-2xl overflow-hidden text-white font-serif h-[60vh]">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={img}
+          alt="Footer background"
+          fill
+          className="object-cover"
+          priority
+        />
       </div>
 
-      <hr className="my-4 bo" />
+      {/* Optional Overlay */}
+      <div className="absolute inset-0 z-10" />
 
-      <div className="flex justify-center pt-4 px-4">
-        <p className=" text-sm text-center">
-          Copyright ©2025 | All rights reserved by NextZeni | Site Designed & Developed by Difmo Technologies
-        </p>
+      {/* Content */}
+      <div className="relative z-20 h-full max-w-screen-xl -bottom-28 mx-auto px-4 flex flex-col justify-center items-center text-center">
+        <h1 className="text-6xl md:text-7xl font-bold mb-6   tracking-wide">
+          NEXT ZENI
+        </h1>
+
+        <nav className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm md:text-base font-medium uppercase tracking-widest">
+          <Link href="/" className="hover:underline">Home</Link>
+          <Link href="/about" className="hover:underline">About</Link>
+          <Link href="/courses" className="hover:underline">Course</Link>
+          <Link href="/blogs" className="hover:underline">Blogs</Link>
+          <Link href="/contact" className="hover:underline">Contact</Link>
+          <Link href="/resources" className="hover:underline">Resources</Link>
+        </nav>
+
+        <div className="mt-8 text-xs md:text-sm">
+          © 2025 Next Zeni. Designed & Developed by Difmo Technologies
+        </div>
       </div>
     </footer>
   );
 };
 
-export default Footer;
+export default CustomFooter;
