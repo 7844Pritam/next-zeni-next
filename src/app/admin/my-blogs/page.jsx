@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from "react";
-import { db, auth } from "../firebase";
+import { db, auth } from "../../firebase";
 import { collection, getDocs, deleteDoc, doc, query, where } from "firebase/firestore";
 import Link from "next/link";
 
@@ -44,7 +44,6 @@ const AllBlogs = () => {
             }
         };
 
-        // Wait for the authentication state to be fully initialized
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
                 console.log("User is logged in:", user);
@@ -52,13 +51,12 @@ const AllBlogs = () => {
             } else {
                 console.log("No user is logged in");
                 setError("No user is logged in");
-                setLoading(false); // Set loading false if no user is logged in
+                setLoading(false); 
             }
         });
 
-        // Cleanup the listener when the component is unmounted
         return () => unsubscribe();
-    }, []); // Empty dependency array means this will only run once when the component mounts
+    }, []); 
 
     const handleDelete = async (id) => {
         try {

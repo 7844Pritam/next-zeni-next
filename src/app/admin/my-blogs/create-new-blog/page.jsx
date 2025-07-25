@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { doc, setDoc, getDoc, updateDoc, collection, addDoc } from "firebase/firestore";
-import { db, auth } from '../../firebase';
+import { db, auth } from '../../../firebase';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useParams } from "next/navigation";
 import MDEditor from "@uiw/react-md-editor";
