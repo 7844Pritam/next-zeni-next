@@ -205,32 +205,45 @@ export default function ProfilePage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-indigo-50 py-22 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      <section
-        id="profile"
-        className="w-full max-w-md sm:max-w-lg bg-white rounded-2xl shadow-2xl p-8 transform transition-all duration-500 hover:shadow-3xl"
-      >
-        <h2 className="text-3xl font-extrabold text-teal-700 mb-8 text-center flex items-center justify-center gap-2">
-          <UserIcon className="h-8 w-8 text-teal-600" />
+
+   return (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-blue-50 to-indigo-50 px-6 py-10">
+    <div className="flex bg-white rounded-2xl shadow-2xl overflow-hidden max-w-5xl w-full">
+      {/* Sidebar Tabs */}
+      <div className="w-20 bg-gradient-to-b from-teal-600 to-teal-400 flex flex-col items-center py-6 space-y-6">
+        <button
+          onClick={() => dispatch(setEditMode(false))}
+          className="p-3 rounded-xl bg-white text-teal-600 shadow-md scale-110"
+        >
+          <UserIcon className="w-6 h-6" />
+        </button>
+        <button
+          onClick={() => dispatch(setShowPopup(true))}
+          className="p-3 rounded-xl text-white hover:bg-white/10 transition-all duration-300"
+        >
+          <PlusIcon className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Main Profile Content */}
+      <div className="flex-1 p-10">
+        <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-2">
+          <UserIcon className="h-7 w-7 text-teal-600" />
           Your Profile
         </h2>
+
         {editMode ? (
-          <form onSubmit={handleProfileUpdate} className="space-y-6">
+          <form onSubmit={handleProfileUpdate} className="space-y-6 max-w-md mx-auto">
             <div className="flex justify-center">
-              <label
-                htmlFor="profileImage"
-                className="relative cursor-pointer group"
-                aria-label="Upload profile image"
-              >
+              <label htmlFor="profileImage" className="relative cursor-pointer group">
                 <Image
                   src={profileImage ? URL.createObjectURL(profileImage) : finalProfile.profileImage}
-                  alt="Profile picture"
+                  alt="Profile"
                   width={120}
                   height={120}
-                  className="rounded-full border-4 border-teal-200 object-cover group-hover:opacity-75 transition-opacity duration-300"
+                  className="rounded-full border-4 border-teal-200 object-cover group-hover:opacity-75 transition-opacity"
                 />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <PencilIcon className="h-8 w-8 text-white bg-teal-500 rounded-full p-2 shadow-md" />
                 </div>
                 <input
@@ -239,10 +252,10 @@ export default function ProfilePage() {
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
-                  aria-hidden="true"
                 />
               </label>
             </div>
+
             <div>
               <label className="text-gray-700 font-semibold flex items-center gap-2">
                 <UserIcon className="h-5 w-5 text-teal-600" />
@@ -254,11 +267,10 @@ export default function ProfilePage() {
                 onChange={(e) =>
                   dispatch(updateUserProfile(currentUser.uid, { name: e.target.value }))
                 }
-                className="w-full mt-2 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none transition-all duration-300 bg-gray-50"
-                required
-                aria-label="Full name"
+                className="w-full mt-2 p-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-teal-400"
               />
             </div>
+
             <div>
               <label className="text-gray-700 font-semibold flex items-center gap-2">
                 <InformationCircleIcon className="h-5 w-5 text-teal-600" />
@@ -269,182 +281,158 @@ export default function ProfilePage() {
                 onChange={(e) =>
                   dispatch(updateUserProfile(currentUser.uid, { bio: e.target.value }))
                 }
-                className="w-full mt-2 p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-teal-400 focus:outline-none transition-all duration-300 bg-gray-50"
+                className="w-full mt-2 p-3 border border-gray-200 rounded-lg resize-none bg-gray-50 focus:ring-2 focus:ring-teal-400"
                 rows={4}
-                aria-label="User bio"
               />
             </div>
-            <div className="flex justify-end space-x-4">
+
+            <div className="flex justify-end gap-3">
               <button
                 type="submit"
-                className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400"
-                aria-label="Save profile changes"
+                className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 flex items-center gap-2 transition-all"
               >
-                <CheckCircleIcon className="h-5 w-5" />
-                Save
+                <CheckCircleIcon className="h-5 w-5" /> Save
               </button>
               <button
                 type="button"
                 onClick={() => dispatch(setEditMode(false))}
-                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                aria-label="Cancel profile editing"
+                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all"
               >
                 Cancel
               </button>
             </div>
           </form>
         ) : (
-          <div className="space-y-6">
-            <div className="flex justify-center">
-              <img
+          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            <div className="flex flex-col items-center">
+              <Image
                 src={finalProfile.profileImage}
-                alt="Profile picture"
+                alt="Profile"
                 width={120}
                 height={120}
-                className="rounded-full border-4 border-teal-200 object-cover"
+                className="rounded-full border-4 border-teal-200 object-cover mb-4"
               />
+              <h3 className="text-2xl font-semibold text-gray-800">{finalProfile.name}</h3>
+              <p className="text-gray-500">{currentUser.email}</p>
             </div>
-            <div className="flex items-start gap-3">
-              <EnvelopeIcon className="h-6 w-6 text-teal-600 mt-1" />
-              <div>
-                <p className="text-gray-600 font-semibold">Email</p>
-                <p className="text-lg text-gray-800">{currentUser.email}</p>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <InformationCircleIcon className="h-5 w-5 text-teal-600 mt-1" />
+                <div>
+                  <p className="text-gray-600 font-semibold">Bio</p>
+                  <p className="text-gray-800">{finalProfile.bio}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <UserIcon className="h-6 w-6 text-teal-600 mt-1" />
-              <div>
-                <p className="text-gray-600 font-semibold">Name</p>
-                <p className="text-lg text-gray-800">{finalProfile.name}</p>
+
+              <div className="flex items-start gap-3">
+                <ClockIcon className="h-5 w-5 text-teal-600 mt-1" />
+                <div>
+                  <p className="text-gray-600 font-semibold">Account Created</p>
+                  <p className="text-gray-800">{formatTimestamp(finalProfile.createdAt)}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <InformationCircleIcon className="h-6 w-6 text-teal-600 mt-1" />
-              <div>
-                <p className="text-gray-600 font-semibold">Bio</p>
-                <p className="text-lg text-gray-800">{finalProfile.bio}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <ClockIcon className="h-6 w-6 text-teal-600 mt-1" />
-              <div>
-                <p className="text-gray-600 font-semibold">Account Created</p>
-                <p className="text-lg text-gray-800">{formatTimestamp(finalProfile.createdAt)}</p>
-              </div>
-            </div>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => dispatch(setEditMode(true))}
-                className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400"
-                aria-label="Edit profile"
-              >
-                <PencilIcon className="h-5 w-5" />
-                Edit Profile
-              </button>
-              {finalProfile.whoIs !== 'Blog Writer' && !writerRequest && (
+
+              <div className="flex justify-start gap-3 mt-6">
                 <button
-                  onClick={() => dispatch(setShowPopup(true))}
-                  className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                  aria-label="Become a blog writer"
+                  onClick={() => dispatch(setEditMode(true))}
+                  className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 flex items-center gap-2 transition-all"
                 >
-                  <PlusIcon className="h-5 w-5" />
-                  Become a Blog Writer
+                  <PencilIcon className="h-5 w-5" /> Edit
                 </button>
+
+                {finalProfile.whoIs !== "Blog Writer" && !writerRequest && (
+                  <button
+                    onClick={() => dispatch(setShowPopup(true))}
+                    className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2 transition-all"
+                  >
+                    <PlusIcon className="h-5 w-5" /> Become a Writer
+                  </button>
+                )}
+              </div>
+
+              {writerRequest && writerRequest.status === "pending" && (
+                <p className="text-orange-500 font-semibold flex items-center gap-2 mt-4">
+                  <ClockIcon className="h-5 w-5" /> Your request is pending
+                </p>
+              )}
+              {writerRequest && writerRequest.status === "confirmed" && (
+                <div className="flex justify-start">
+                  <button
+                    onClick={() => router.push("/my-blogs")}
+                    className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 transition-all"
+                  >
+                    <PlusIcon className="h-5 w-5" /> Create Blog
+                  </button>
+                </div>
               )}
             </div>
-            {writerRequest && writerRequest.status === 'pending' && (
-              <p className="text-center text-orange-500 font-semibold flex items-center justify-center gap-2">
-                <ClockIcon className="h-5 w-5" />
-                Your request to become a blog writer is pending.
-              </p>
-            )}
-            {writerRequest && writerRequest.status === 'confirmed' && (
-              <div className="flex justify-center">
-                <button
-                  onClick={() => router.push('/my-blogs')}
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400"
-                  aria-label="Create a blog"
-                >
-                  <PlusIcon className="h-5 w-5" />
-                  Create Blog
-                </button>
-              </div>
-            )}
           </div>
         )}
-      </section>
-
-      {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity duration-300">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 scale-100">
-            <h2 className="text-2xl font-extrabold mb-6 text-teal-700 flex items-center gap-2">
-              <PlusIcon className="h-6 w-6 text-teal-600" />
-              Become a Blog Writer
-            </h2>
-            <form onSubmit={handleWriterRequest} className="space-y-6">
-              <div>
-                <label className="text-gray-700 font-semibold flex items-center gap-2">
-                  <UserIcon className="h-5 w-5 text-teal-600" />
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={finalProfile.name || currentUser.displayName}
-                  disabled
-                  className="w-full mt-2 p-3 border border-gray-200 rounded-lg bg-gray-100"
-                  aria-label="User name (disabled)"
-                />
-              </div>
-              <div>
-                <label className="text-gray-700 font-semibold flex items-center gap-2">
-                  <EnvelopeIcon className="h-5 w-5 text-teal-600" />
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={currentUser.email}
-                  disabled
-                  className="w-full mt-2 p-3 border border-gray-200 rounded-lg bg-gray-100"
-                  aria-label="User email (disabled)"
-                />
-              </div>
-              <div>
-                <label className="text-gray-700 font-semibold flex items-center gap-2">
-                  <PhoneIcon className="h-5 w-5 text-teal-600" />
-                  Mobile Number
-                </label>
-                <input
-                  type="tel"
-                  value={mobileNumber || ''}
-                  onChange={(e) => dispatch(setMobileNumber(e.target.value))}
-                  required
-                  className="w-full mt-2 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-400 focus:outline-none transition-all duration-300 bg-gray-50"
-                  placeholder="Enter your mobile number"
-                  aria-label="Mobile number"
-                />
-              </div>
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="submit"
-                  className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-400"
-                  aria-label="Submit writer request"
-                >
-                  <CheckCircleIcon className="h-5 w-5" />
-                  Submit Request
-                </button>
-                <button
-                  type="button"
-                  onClick={() => dispatch(setShowPopup(false))}
-                  className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 flex items-center gap-2 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  aria-label="Cancel writer request"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
-  );
+
+    {/* Become Writer Popup */}
+    {showPopup && (
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
+          <h2 className="text-2xl font-bold text-teal-700 mb-6 flex items-center gap-2">
+            <PlusIcon className="h-6 w-6 text-teal-600" />
+            Become a Blog Writer
+          </h2>
+          <form onSubmit={handleWriterRequest} className="space-y-5">
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1">Name</label>
+              <input
+                type="text"
+                value={finalProfile.name}
+                disabled
+                className="w-full p-3 border border-gray-200 rounded-lg bg-gray-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1">Email</label>
+              <input
+                type="email"
+                value={currentUser.email}
+                disabled
+                className="w-full p-3 border border-gray-200 rounded-lg bg-gray-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1">Mobile Number</label>
+              <input
+                type="tel"
+                value={mobileNumber || ""}
+                onChange={(e) => dispatch(setMobileNumber(e.target.value))}
+                required
+                placeholder="Enter your mobile number"
+                className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-teal-400"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="submit"
+                className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 flex items-center gap-2 transition-all"
+              >
+                <CheckCircleIcon className="h-5 w-5" /> Submit
+              </button>
+              <button
+                type="button"
+                onClick={() => dispatch(setShowPopup(false))}
+                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 }

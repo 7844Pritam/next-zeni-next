@@ -17,7 +17,7 @@ export default function AdminLayout({ children }) {
       {/* Fixed Sidebar */}
       <aside className="w-64 fixed inset-y-0 left-0 bg-teal-800 text-white">
         <div className="p-4">
-          <h2 className="text-2xl font-bold mb-6">Admin Panel</h2>
+          <h2 className="text-2xl font-bold mb-6">NextZeni</h2>
           <nav className="space-y-2">
             <a
               href="#blogs"
