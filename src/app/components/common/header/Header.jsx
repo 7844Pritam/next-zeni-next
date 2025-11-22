@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { sendEmailVerification } from 'firebase/auth';
-import { FaUser, FaUserCheck } from 'react-icons/fa';
+import { Menu, X, User, UserCheck, LogOut, Shield, ChevronRight } from 'lucide-react';
 
 import logoImg from '../../../../../public/images/logo1.jpeg';
 
@@ -90,9 +90,9 @@ const Header = () => {
     visible: {
       x: 0,
       opacity: 1,
-      transition: { duration: 0.4, ease: 'easeOut' },
+      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
     },
-    exit: { x: '100%', opacity: 0, transition: { duration: 0.3 } },
+    exit: { x: '100%', opacity: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
   };
 
   const navItemVariants = {
@@ -107,15 +107,15 @@ const Header = () => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-50 font-Libre transition-all duration-300 ${scrolled
-          ? 'bg-white/90 backdrop-blur-md shadow-md py-2'
-          : 'bg-transparent py-4'
+        className={`fixed top-0 left-0 w-full z-50 font-Libre transition-all duration-500 ${scrolled
+            ? 'bg-white/80 backdrop-blur-lg shadow-sm py-3'
+            : 'bg-transparent py-5'
           }`}
       >
         <nav className="container mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-10 h-10 overflow-hidden rounded-full border border-gray-100 shadow-sm">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 overflow-hidden rounded-xl border-2 border-teal-500/20 shadow-sm group-hover:border-teal-500/50 transition-colors">
               <Image
                 src={logoImg}
                 alt="Logo"
@@ -124,79 +124,76 @@ const Header = () => {
                 priority
               />
             </div>
-            <span className={`text-xl font-bold tracking-tight hidden sm:block ${scrolled ? 'text-teal-700' : 'text-teal-800'}`}>
-              NextZeni
-            </span>
+            <div className="flex flex-col">
+              <span className={`text-xl font-bold tracking-tight leading-none ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>
+                NextZeni
+              </span>
+              <span className="text-[10px] font-medium text-teal-600 tracking-widest uppercase">
+                Academy
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
-          <ul className="hidden md:flex items-center gap-8">
+          <ul className="hidden lg:flex items-center gap-8">
             {navItems.map((item) => (
               <li key={item.name} className="relative group">
                 {item.path ? (
                   <Link
                     href={item.path}
-                    className={`font-medium transition-colors ${scrolled ? 'text-gray-700 hover:text-teal-600' : 'text-gray-800 hover:text-teal-700'}`}
+                    className={`text-sm font-medium transition-colors duration-300 ${scrolled ? 'text-gray-600 hover:text-teal-600' : 'text-gray-700 hover:text-teal-600'
+                      }`}
                   >
                     {item.name}
                   </Link>
                 ) : (
                   <button
                     onClick={() => handleScrollToSection(item.id)}
-                    className={`font-medium transition-colors ${scrolled ? 'text-gray-700 hover:text-teal-600' : 'text-gray-800 hover:text-teal-700'}`}
+                    className={`text-sm font-medium transition-colors duration-300 ${scrolled ? 'text-gray-600 hover:text-teal-600' : 'text-gray-700 hover:text-teal-600'
+                      }`}
                   >
                     {item.name}
                   </button>
                 )}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-500 transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100"></span>
               </li>
             ))}
           </ul>
 
           {/* Auth Buttons & Mobile Toggle */}
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-4">
               <Link
                 href="/contact"
-                className="text-teal-600 font-medium hover:text-teal-700 transition-colors"
+                className="text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors"
               >
                 Get Certificate
               </Link>
 
               {user ? (
-                <>
+                <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
                   <Link
                     href="/profile"
-                    className="text-gray-600 hover:text-teal-600 transition-colors"
+                    className="group flex items-center gap-2"
                     title={isVerified ? 'Verified' : 'Unverified'}
                   >
-                    {isVerified ? (
-                      <FaUserCheck size={20} className="text-teal-500" />
-                    ) : (
-                      <FaUser size={20} />
-                    )}
+                    <div className={`p-2 rounded-full transition-colors ${isVerified ? 'bg-teal-50 text-teal-600 group-hover:bg-teal-100' : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'}`}>
+                      {isVerified ? <UserCheck size={18} /> : <User size={18} />}
+                    </div>
                   </Link>
-
-                  {!isVerified && (
-                    <button
-                      onClick={handleResendVerification}
-                      className="text-xs text-orange-500 underline hover:text-orange-600"
-                    >
-                      Verify
-                    </button>
-                  )}
 
                   <button
                     onClick={handleLogout}
-                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                    title="Logout"
                   >
-                    Logout
+                    <LogOut size={20} />
                   </button>
-                </>
+                </div>
               ) : (
                 <Link
                   href="/auth/login"
-                  className="bg-teal-600 text-white px-5 py-2 rounded-full text-sm font-medium shadow-md hover:bg-teal-700 transition-all hover:shadow-lg"
+                  className="bg-gray-900 text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-gray-900/20 hover:bg-gray-800 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
                 >
                   Login
                 </Link>
@@ -205,33 +202,21 @@ const Header = () => {
               {isAdmin && (
                 <Link
                   href="/admin/all-blogs"
-                  className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-orange-600 transition-colors"
+                  className="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 transition-colors shadow-md"
+                  title="Admin Dashboard"
                 >
-                  Admin
+                  <Shield size={18} />
                 </Link>
               )}
             </div>
 
             {/* Mobile toggle */}
             <button
-              className="md:hidden text-2xl text-gray-800 focus:outline-none z-50"
+              className="lg:hidden text-gray-800 focus:outline-none z-50 p-2"
               onClick={() => setClick(!click)}
               aria-label="Toggle menu"
             >
-              <div className="w-6 h-5 relative flex flex-col justify-between">
-                <motion.span
-                  animate={{ rotate: click ? 45 : 0, y: click ? 9 : 0 }}
-                  className="w-full h-0.5 bg-gray-800 rounded-full origin-center"
-                />
-                <motion.span
-                  animate={{ opacity: click ? 0 : 1 }}
-                  className="w-full h-0.5 bg-gray-800 rounded-full"
-                />
-                <motion.span
-                  animate={{ rotate: click ? -45 : 0, y: click ? -9 : 0 }}
-                  className="w-full h-0.5 bg-gray-800 rounded-full origin-center"
-                />
-              </div>
+              {click ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
         </nav>
@@ -243,7 +228,7 @@ const Header = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="absolute top-full left-0 w-full bg-green-500 text-white text-center py-2 text-sm font-medium"
+              className="absolute top-full left-0 w-full bg-green-500 text-white text-center py-2 text-sm font-medium shadow-md"
             >
               {verificationMessage}
             </motion.div>
@@ -259,16 +244,16 @@ const Header = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setClick(false)}
-                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
               />
               <motion.div
-                className="fixed top-0 right-0 w-[75%] max-w-sm h-screen bg-white shadow-2xl z-50 flex flex-col pt-24 px-8 md:hidden"
+                className="fixed top-0 right-0 w-[85%] max-w-sm h-screen bg-white shadow-2xl z-50 flex flex-col pt-28 px-8 lg:hidden border-l border-gray-100"
                 variants={menuVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
               >
-                <ul className="flex flex-col gap-6">
+                <ul className="flex flex-col gap-4">
                   {navItems.map((item, index) => (
                     <motion.li
                       key={item.name}
@@ -281,16 +266,18 @@ const Header = () => {
                         <Link
                           href={item.path}
                           onClick={() => setClick(false)}
-                          className="text-xl font-medium text-gray-800 hover:text-teal-600 block"
+                          className="flex items-center justify-between text-lg font-medium text-gray-800 hover:text-teal-600 py-2 border-b border-gray-50 group"
                         >
                           {item.name}
+                          <ChevronRight size={16} className="text-gray-300 group-hover:text-teal-500 transition-colors" />
                         </Link>
                       ) : (
                         <button
                           onClick={() => handleScrollToSection(item.id)}
-                          className="text-xl font-medium text-gray-800 hover:text-teal-600 block text-left w-full"
+                          className="flex items-center justify-between w-full text-lg font-medium text-gray-800 hover:text-teal-600 py-2 border-b border-gray-50 group"
                         >
                           {item.name}
+                          <ChevronRight size={16} className="text-gray-300 group-hover:text-teal-500 transition-colors" />
                         </button>
                       )}
                     </motion.li>
@@ -298,54 +285,64 @@ const Header = () => {
                 </ul>
 
                 <motion.div
-                  className="mt-8 pt-8 border-t border-gray-100 flex flex-col gap-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, transition: { delay: 0.4 } }}
+                  className="mt-auto mb-10 flex flex-col gap-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
                 >
                   {user ? (
-                    <>
-                      <Link
-                        href="/profile"
-                        className="flex items-center gap-2 text-gray-700 font-medium"
-                        onClick={() => setClick(false)}
-                      >
-                        <FaUser className="text-teal-500" />
-                        Profile {isVerified ? '(Verified)' : '(Unverified)'}
-                      </Link>
+                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center text-teal-600">
+                          {isVerified ? <UserCheck size={24} /> : <User size={24} />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">My Account</p>
+                          <p className="text-xs text-gray-500">{isVerified ? 'Verified User' : 'Unverified User'}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <Link
+                          href="/profile"
+                          className="bg-white border border-gray-200 text-gray-700 py-2 rounded-lg text-sm font-medium text-center hover:bg-gray-50"
+                          onClick={() => setClick(false)}
+                        >
+                          Profile
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="bg-white border border-gray-200 text-red-600 py-2 rounded-lg text-sm font-medium text-center hover:bg-red-50"
+                        >
+                          Logout
+                        </button>
+                      </div>
 
                       {!isVerified && (
                         <button
                           onClick={handleResendVerification}
-                          className="text-left text-orange-500 font-medium"
+                          className="w-full mt-3 text-xs text-orange-500 hover:text-orange-600 font-medium"
                         >
-                          Verify Email
+                          Resend Verification Email
                         </button>
                       )}
-
-                      <button
-                        onClick={handleLogout}
-                        className="bg-gray-100 text-gray-800 px-4 py-3 rounded-lg font-medium text-center hover:bg-gray-200"
-                      >
-                        Logout
-                      </button>
-                    </>
+                    </div>
                   ) : (
                     <Link
                       href="/auth/login"
-                      className="bg-teal-600 text-white px-4 py-3 rounded-lg font-medium text-center shadow-md hover:bg-teal-700"
+                      className="bg-gray-900 text-white px-6 py-4 rounded-xl font-bold text-center shadow-lg hover:bg-gray-800 transition-all"
                       onClick={() => setClick(false)}
                     >
-                      Login
+                      Login / Sign Up
                     </Link>
                   )}
 
                   {isAdmin && (
                     <Link
                       href="/admin/all-blogs"
-                      className="bg-orange-500 text-white px-4 py-3 rounded-lg font-medium text-center hover:bg-orange-600"
+                      className="bg-orange-500 text-white px-6 py-4 rounded-xl font-bold text-center shadow-lg hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
                       onClick={() => setClick(false)}
                     >
-                      Admin Dashboard
+                      <Shield size={20} /> Admin Dashboard
                     </Link>
                   )}
                 </motion.div>

@@ -2,22 +2,39 @@
 
 import React, { useEffect, useState } from "react";
 import { db } from "../../../app/firebase";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  increment,
+  arrayUnion,
+  arrayRemove,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp
+} from "firebase/firestore";
 import {
   Facebook,
   Twitter,
   Linkedin,
-  Instagram,
   Link as LinkIcon,
   Calendar,
   Clock,
   Share2,
-  ArrowLeft,
-  CheckCircle
+  CheckCircle,
+  Eye,
+  Heart,
+  MessageCircle,
+  Send
 } from "lucide-react";
 import Link from "next/link";
 import MarkdownPreview from '@uiw/react-markdown-preview';
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return "N/A";
@@ -40,11 +57,34 @@ const BlogDetailsClient = ({ blogId }) => {
   const [currentUrl, setCurrentUrl] = useState("");
   const [progress, setProgress] = useState(0);
 
+  // Interaction States
+  const [likes, setLikes] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  const { user } = useSelector((state) => state.auth);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setCurrentUrl(window.location.href);
     }
   }, []);
+
+  // Increment View Count on Mount
+  useEffect(() => {
+    const incrementView = async () => {
+      try {
+        const blogRef = doc(db, "blogs", blogId);
+        await updateDoc(blogRef, {
+          views: increment(1)
+        });
+      } catch (err) {
+        console.error("Error incrementing view:", err);
+      }
+    };
+    if (blogId) incrementView();
+  }, [blogId]);
 
   useEffect(() => {
     const fetchBlogData = async () => {
@@ -61,7 +101,9 @@ const BlogDetailsClient = ({ blogId }) => {
             image: data.image || "",
             bullets: Array.isArray(data.bullets) ? data.bullets : [],
             createdAt: data.createdAt || null,
+            views: data.views || 0,
           });
+          setLikes(data.likes || []);
         } else {
           setError("Blog not found");
         }
@@ -79,6 +121,20 @@ const BlogDetailsClient = ({ blogId }) => {
     };
 
     if (blogId) fetchBlogData();
+  }, [blogId]);
+
+  // Real-time Comments Listener
+  useEffect(() => {
+    if (!blogId) return;
+    const q = query(collection(db, "blogs", blogId, "comments"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const commentsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setComments(commentsData);
+    });
+    return () => unsubscribe();
   }, [blogId]);
 
   // Scroll progress tracking
@@ -103,6 +159,64 @@ const BlogDetailsClient = ({ blogId }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleLike = async () => {
+    if (!user) {
+      alert("Please login to like this blog.");
+      return;
+    }
+    const blogRef = doc(db, "blogs", blogId);
+    const isLiked = likes.includes(user.uid);
+
+    try {
+      if (isLiked) {
+        await updateDoc(blogRef, {
+          likes: arrayRemove(user.uid)
+        });
+        setLikes(prev => prev.filter(id => id !== user.uid));
+      } else {
+        await updateDoc(blogRef, {
+          likes: arrayUnion(user.uid)
+        });
+        setLikes(prev => [...prev, user.uid]);
+      }
+    } catch (err) {
+      console.error("Error updating like:", err);
+    }
+  };
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      alert("Please login to comment.");
+      return;
+    }
+    if (!newComment.trim()) return;
+
+    setIsSubmittingComment(true);
+    try {
+      // Add comment to subcollection
+      await addDoc(collection(db, "blogs", blogId, "comments"), {
+        text: newComment,
+        userId: user.uid,
+        userName: user.displayName || "Anonymous",
+        userImage: user.photoURL || "",
+        createdAt: serverTimestamp()
+      });
+
+      // Update comment count on main doc
+      const blogRef = doc(db, "blogs", blogId);
+      await updateDoc(blogRef, {
+        commentsCount: increment(1)
+      });
+
+      setNewComment("");
+    } catch (err) {
+      console.error("Error submitting comment:", err);
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(blog?.title || "Check this out!")}`,
@@ -116,6 +230,8 @@ const BlogDetailsClient = ({ blogId }) => {
   );
 
   if (error) return <div className="text-center text-red-500 py-20 text-xl">{error}</div>;
+
+  const isLiked = user && likes.includes(user.uid);
 
   return (
     <div className="bg-white pt-18 min-h-screen font-sans">
@@ -142,8 +258,6 @@ const BlogDetailsClient = ({ blogId }) => {
             transition={{ duration: 0.6 }}
             className="max-w-4xl"
           >
-
-
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight font-Libre">
               {blog.title}
             </h1>
@@ -163,6 +277,10 @@ const BlogDetailsClient = ({ blogId }) => {
                 <Clock size={16} />
                 5 min read
               </div>
+              <div className="flex items-center gap-2">
+                <Eye size={16} />
+                {blog.views || 0} Views
+              </div>
             </div>
           </motion.div>
         </div>
@@ -171,11 +289,23 @@ const BlogDetailsClient = ({ blogId }) => {
       <div className="container mx-auto px-4 md:px-6 py-12 flex flex-col lg:flex-row gap-12">
         {/* Main Content */}
         <main className="flex-1 max-w-4xl">
-          {/* Share Bar */}
-          <div className="flex items-center justify-between border-b border-gray-100 pb-6 mb-8">
-            <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-              <Share2 size={16} /> Share this article
+          {/* Share & Interaction Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-6 mb-8 gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleLike}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${isLiked ? 'bg-red-50 text-red-500' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+              >
+                <Heart size={20} fill={isLiked ? "currentColor" : "none"} />
+                <span className="font-medium">{likes.length} Likes</span>
+              </button>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 text-gray-600">
+                <MessageCircle size={20} />
+                <span className="font-medium">{comments.length} Comments</span>
+              </div>
             </div>
+
             <div className="flex gap-3">
               <SocialShareButton icon={<Facebook size={18} />} url={shareLinks.facebook} color="hover:text-blue-600" />
               <SocialShareButton icon={<Twitter size={18} />} url={shareLinks.twitter} color="hover:text-sky-500" />
@@ -225,6 +355,69 @@ const BlogDetailsClient = ({ blogId }) => {
               </ul>
             </div>
           )}
+
+          {/* Comments Section */}
+          <div className="mt-16 pt-10 border-t border-gray-100">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+              Discussion <span className="text-gray-400 text-lg font-normal">({comments.length})</span>
+            </h3>
+
+            {/* Comment Form */}
+            <form onSubmit={handleCommentSubmit} className="mb-10 bg-gray-50 p-6 rounded-2xl">
+              <div className="flex gap-4">
+                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold shrink-0">
+                  {user ? user.displayName?.[0] || "U" : "?"}
+                </div>
+                <div className="flex-1">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder={user ? "Share your thoughts..." : "Please login to comment"}
+                    className="w-full bg-white border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[100px] resize-none"
+                    disabled={!user}
+                  />
+                  <div className="flex justify-end mt-3">
+                    <button
+                      type="submit"
+                      disabled={!user || !newComment.trim() || isSubmittingComment}
+                      className="bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isSubmittingComment ? "Posting..." : <>Post Comment <Send size={16} /></>}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            {/* Comments List */}
+            <div className="space-y-6">
+              {comments.map((comment) => (
+                <div key={comment.id} className="flex gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0">
+                    {comment.userImage ? (
+                      <img src={comment.userImage} alt={comment.userName} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-500 font-bold">
+                        {comment.userName?.[0] || "A"}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-gray-900">{comment.userName}</span>
+                      <span className="text-xs text-gray-500">
+                        {comment.createdAt ? formatTimestamp(comment.createdAt) : "Just now"}
+                      </span>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">{comment.text}</p>
+                  </div>
+                </div>
+              ))}
+              {comments.length === 0 && (
+                <p className="text-center text-gray-500 py-8">No comments yet. Be the first to share your thoughts!</p>
+              )}
+            </div>
+          </div>
         </main>
 
         {/* Sidebar */}
@@ -233,10 +426,10 @@ const BlogDetailsClient = ({ blogId }) => {
             <h3 className="text-lg font-bold text-gray-900 mb-6 border-l-4 border-teal-500 pl-3">
               More to Read
             </h3>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
               {blogs
                 .filter((b) => b.id !== blogId)
-                .slice(0, 4)
+                .slice(0, 6)
                 .map((b) => (
                   <Link
                     key={b.id}
