@@ -6,6 +6,7 @@ const nextConfig = {
       "plus.unsplash.com",
       "encrypted-tbn0.gstatic.com",
       "lowqualitymemes.com",
+      "images.unsplash.com"
     ],
     remotePatterns: [
       {

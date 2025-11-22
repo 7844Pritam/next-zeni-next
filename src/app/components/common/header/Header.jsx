@@ -5,17 +5,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { sendEmailVerification } from 'firebase/auth';
-// import { useDispatch, useSelector } from 'react-redux';
 import { FaUser, FaUserCheck } from 'react-icons/fa';
 
 import logoImg from '../../../../../public/images/logo1.jpeg';
 
 import { logoutUser, monitorAuth } from '@/app/redux/auth/authActions';
 import { clearUserProfile, getUserProfile } from '@/app/redux/user/userActions';
-import {  useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Header = () => {
   const [click, setClick] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState('');
 
   const dispatch = useDispatch();
@@ -45,6 +45,20 @@ const Header = () => {
     }
   }, [dispatch, user]);
 
+  // Handle scroll for sticky header shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleLogout = () => {
     dispatch(logoutUser());
   };
@@ -72,205 +86,271 @@ const Header = () => {
   };
 
   const menuVariants = {
-    hidden: { x: '-100%', opacity: 0 },
+    hidden: { x: '100%', opacity: 0 },
     visible: {
       x: 0,
       opacity: 1,
-      transition: { duration: 0.5, ease: 'easeInOut', type: 'spring' },
+      transition: { duration: 0.4, ease: 'easeOut' },
     },
-    exit: { x: '-100%', opacity: 0, transition: { duration: 0.3 } },
+    exit: { x: '100%', opacity: 0, transition: { duration: 0.3 } },
   };
 
   const navItemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, x: 20 },
     visible: (i) => ({
       opacity: 1,
-      y: 0,
+      x: 0,
       transition: { delay: i * 0.1, duration: 0.3 },
     }),
   };
 
   return (
     <>
-      <header className="fixed top-2 font-Libre left-3 right-3 z-50 bg-teal-500 rounded-md shadow-md backdrop-blur-md">
-        <nav className="container mx-auto px-6 py-3 flex items-center justify-between">
+      <header
+        className={`fixed top-0 left-0 w-full z-50 font-Libre transition-all duration-300 ${scrolled
+          ? 'bg-white/90 backdrop-blur-md shadow-md py-2'
+          : 'bg-transparent py-4'
+          }`}
+      >
+        <nav className="container mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex p-1 rounded-full bg-white items-center">
-            <Image
-              src={logoImg}
-              alt="Logo"
-              width={40}
-              height={40}
-              className="rounded-full object-cover"
-              priority
-            />
+          <Link href="/" className="flex items-center gap-2">
+            <div className="relative w-10 h-10 overflow-hidden rounded-full border border-gray-100 shadow-sm">
+              <Image
+                src={logoImg}
+                alt="Logo"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+            <span className={`text-xl font-bold tracking-tight hidden sm:block ${scrolled ? 'text-teal-700' : 'text-teal-800'}`}>
+              NextZeni
+            </span>
           </Link>
 
-          {/* Mobile toggle */}
-          <div
-            className="md:hidden text-2xl relative z-40 cursor-pointer text-gray-800"
-            onClick={() => setClick(!click)}
-            role="button"
-            tabIndex={0}
-            aria-label="Toggle menu"
-          >
-            <motion.span
-              animate={{ rotate: click ? 45 : 0, y: click ? 7 : 0 }}
-              className="block w-6 h-0.5 bg-gray-800 mb-1"
-            />
-            <motion.span
-              animate={{ opacity: click ? 0 : 1 }}
-              className="block w-6 h-0.5 bg-gray-800 mb-1"
-            />
-            <motion.span
-              animate={{ rotate: click ? -45 : 0, y: click ? -7 : 0 }}
-              className="block w-6 h-0.5 bg-gray-800"
-            />
-          </div>
-
           {/* Desktop Nav */}
-          <ul className="hidden md:flex items-center gap-6">
-            {navItems.map((item, index) => (
-              <motion.li
-                key={item.name}
-                className="text-base font-medium"
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: index * 0.1 }}
-              >
+          <ul className="hidden md:flex items-center gap-8">
+            {navItems.map((item) => (
+              <li key={item.name} className="relative group">
                 {item.path ? (
-                  <Link href={item.path} className="text-white hover:text-orange-500">
+                  <Link
+                    href={item.path}
+                    className={`font-medium transition-colors ${scrolled ? 'text-gray-700 hover:text-teal-600' : 'text-gray-800 hover:text-teal-700'}`}
+                  >
                     {item.name}
                   </Link>
                 ) : (
                   <button
                     onClick={() => handleScrollToSection(item.id)}
-                    className="text-white hover:text-orange-500"
+                    className={`font-medium transition-colors ${scrolled ? 'text-gray-700 hover:text-teal-600' : 'text-gray-800 hover:text-teal-700'}`}
                   >
                     {item.name}
                   </button>
                 )}
-              </motion.li>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-500 transition-all duration-300 group-hover:w-full"></span>
+              </li>
             ))}
           </ul>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link
-              href="/contact"
-              className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm hover:bg-orange-600"
-            >
-              Get Certificate
-            </Link>
-
-            {user ? (
-              <>
-                <Link href="/profile" className="text-white" title={isVerified ? 'Verified' : 'Unverified'}>
-                  {isVerified ? <FaUserCheck size={24} /> : <FaUser size={24} />}
-                </Link>
-
-                {!isVerified && (
-                  <button
-                    onClick={handleResendVerification}
-                    className="text-white text-sm underline hover:text-orange-300"
-                  >
-                    Verify Email
-                  </button>
-                )}
-
-                <button
-                  onClick={handleLogout}
-                  className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-black"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
+          {/* Auth Buttons & Mobile Toggle */}
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
               <Link
-                href="/auth/login"
-                className="bg-gray-800 text-white px-4 py-2 rounded-full text-sm hover:bg-black"
+                href="/contact"
+                className="text-teal-600 font-medium hover:text-teal-700 transition-colors"
               >
-                Login
+                Get Certificate
               </Link>
-            )}
-
-            {isAdmin && (
-              <Link
-                href="/admin/all-blogs"
-                className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm hover:bg-orange-600"
-              >
-                Admin
-              </Link>
-            )}
-          </div>
-        </nav>
-
-        {/* Verification message */}
-        {verificationMessage && (
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md z-50">
-            {verificationMessage}
-          </div>
-        )}
-
-        {/* Mobile Nav */}
-        <AnimatePresence>
-          {click && (
-            <motion.ul
-              className="fixed top-0 left-0 w-full h-screen bg-gradient-to-b from-teal-500 to-teal-600 flex flex-col items-center justify-center gap-6 md:hidden"
-              variants={menuVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              {navItems.map((item, index) => (
-                <motion.li
-                  key={item.name}
-                  className="text-lg"
-                  custom={index}
-                  variants={navItemVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {item.path ? (
-                    <Link href={item.path} onClick={() => setClick(false)} className="text-white">
-                      {item.name}
-                    </Link>
-                  ) : (
-                    <button onClick={() => handleScrollToSection(item.id)} className="text-white">
-                      {item.name}
-                    </button>
-                  )}
-                </motion.li>
-              ))}
 
               {user ? (
                 <>
-                  <Link href="/profile" className="text-white" onClick={() => setClick(false)}>
-                    Profile {isVerified ? '(Verified)' : '(Unverified)'}
+                  <Link
+                    href="/profile"
+                    className="text-gray-600 hover:text-teal-600 transition-colors"
+                    title={isVerified ? 'Verified' : 'Unverified'}
+                  >
+                    {isVerified ? (
+                      <FaUserCheck size={20} className="text-teal-500" />
+                    ) : (
+                      <FaUser size={20} />
+                    )}
                   </Link>
 
                   {!isVerified && (
-                    <button onClick={handleResendVerification} className="text-white">
-                      Verify Email
+                    <button
+                      onClick={handleResendVerification}
+                      className="text-xs text-orange-500 underline hover:text-orange-600"
+                    >
+                      Verify
                     </button>
                   )}
 
-                  <button onClick={handleLogout} className="text-white">
+                  <button
+                    onClick={handleLogout}
+                    className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
+                  >
                     Logout
                   </button>
                 </>
               ) : (
-                <Link href="/auth/login" className="text-white" onClick={() => setClick(false)}>
+                <Link
+                  href="/auth/login"
+                  className="bg-teal-600 text-white px-5 py-2 rounded-full text-sm font-medium shadow-md hover:bg-teal-700 transition-all hover:shadow-lg"
+                >
                   Login
                 </Link>
               )}
 
               {isAdmin && (
-                <Link href="/admin/all-blogs" className="text-white" onClick={() => setClick(false)}>
+                <Link
+                  href="/admin/all-blogs"
+                  className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-orange-600 transition-colors"
+                >
                   Admin
                 </Link>
               )}
-            </motion.ul>
+            </div>
+
+            {/* Mobile toggle */}
+            <button
+              className="md:hidden text-2xl text-gray-800 focus:outline-none z-50"
+              onClick={() => setClick(!click)}
+              aria-label="Toggle menu"
+            >
+              <div className="w-6 h-5 relative flex flex-col justify-between">
+                <motion.span
+                  animate={{ rotate: click ? 45 : 0, y: click ? 9 : 0 }}
+                  className="w-full h-0.5 bg-gray-800 rounded-full origin-center"
+                />
+                <motion.span
+                  animate={{ opacity: click ? 0 : 1 }}
+                  className="w-full h-0.5 bg-gray-800 rounded-full"
+                />
+                <motion.span
+                  animate={{ rotate: click ? -45 : 0, y: click ? -9 : 0 }}
+                  className="w-full h-0.5 bg-gray-800 rounded-full origin-center"
+                />
+              </div>
+            </button>
+          </div>
+        </nav>
+
+        {/* Verification message */}
+        <AnimatePresence>
+          {verificationMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="absolute top-full left-0 w-full bg-green-500 text-white text-center py-2 text-sm font-medium"
+            >
+              {verificationMessage}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile Nav Overlay */}
+        <AnimatePresence>
+          {click && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setClick(false)}
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+              />
+              <motion.div
+                className="fixed top-0 right-0 w-[75%] max-w-sm h-screen bg-white shadow-2xl z-50 flex flex-col pt-24 px-8 md:hidden"
+                variants={menuVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <ul className="flex flex-col gap-6">
+                  {navItems.map((item, index) => (
+                    <motion.li
+                      key={item.name}
+                      custom={index}
+                      variants={navItemVariants}
+                      initial="hidden"
+                      animate="visible"
+                    >
+                      {item.path ? (
+                        <Link
+                          href={item.path}
+                          onClick={() => setClick(false)}
+                          className="text-xl font-medium text-gray-800 hover:text-teal-600 block"
+                        >
+                          {item.name}
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => handleScrollToSection(item.id)}
+                          className="text-xl font-medium text-gray-800 hover:text-teal-600 block text-left w-full"
+                        >
+                          {item.name}
+                        </button>
+                      )}
+                    </motion.li>
+                  ))}
+                </ul>
+
+                <motion.div
+                  className="mt-8 pt-8 border-t border-gray-100 flex flex-col gap-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, transition: { delay: 0.4 } }}
+                >
+                  {user ? (
+                    <>
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-2 text-gray-700 font-medium"
+                        onClick={() => setClick(false)}
+                      >
+                        <FaUser className="text-teal-500" />
+                        Profile {isVerified ? '(Verified)' : '(Unverified)'}
+                      </Link>
+
+                      {!isVerified && (
+                        <button
+                          onClick={handleResendVerification}
+                          className="text-left text-orange-500 font-medium"
+                        >
+                          Verify Email
+                        </button>
+                      )}
+
+                      <button
+                        onClick={handleLogout}
+                        className="bg-gray-100 text-gray-800 px-4 py-3 rounded-lg font-medium text-center hover:bg-gray-200"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      href="/auth/login"
+                      className="bg-teal-600 text-white px-4 py-3 rounded-lg font-medium text-center shadow-md hover:bg-teal-700"
+                      onClick={() => setClick(false)}
+                    >
+                      Login
+                    </Link>
+                  )}
+
+                  {isAdmin && (
+                    <Link
+                      href="/admin/all-blogs"
+                      className="bg-orange-500 text-white px-4 py-3 rounded-lg font-medium text-center hover:bg-orange-600"
+                      onClick={() => setClick(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                </motion.div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </header>
