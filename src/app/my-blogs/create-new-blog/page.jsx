@@ -18,7 +18,7 @@ const MDEditor = dynamic(
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
 
-const AddBlogs = () => {
+const AddBlogsContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const blogId = searchParams.get('id'); // Get ID from query params if editing
@@ -253,6 +253,21 @@ const AddBlogs = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const AddBlogs = () => {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 text-teal-600 animate-spin" />
+          <p className="text-gray-500 font-medium">Loading...</p>
+        </div>
+      </div>
+    }>
+      <AddBlogsContent />
+    </React.Suspense>
   );
 };
 
